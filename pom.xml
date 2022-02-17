@@ -30,7 +30,7 @@
 				<version>${mule.maven.plugin.version}</version>
 				<extensions>true</extensions>
 				<configuration>
-						<cloudHubDeployment>
+					<cloudHubDeployment>
 						<uri>https://anypoint.mulesoft.com</uri>
 						<muleVersion>${muleVersion}</muleVersion>
 						<username>${username}</username>
@@ -40,20 +40,18 @@
 						<businessGroup>${businessGroup}</businessGroup>
 						<workerType>${workerType}</workerType>
 						<objectStoreV2>true</objectStoreV2>
-	
 						<properties>
 							<anypoint.platform.client_id>${anypoint.platform.client_id}</anypoint.platform.client_id>
 							<anypoint.platform.client_secret>${anypoint.platform.client_secret}</anypoint.platform.client_secret>
 						</properties>
 					</cloudHubDeployment>
-				
+					<classifier>mule-application</classifier>
 					<sharedLibraries>
 						<sharedLibrary>
-							<groupId>com.mycompany</groupId>
-							<artifactId>mysql-connector-java-8.0.16</artifactId>
+							<groupId>mysql</groupId>
+							<artifactId>mysql-connector-java</artifactId>
 						</sharedLibrary>
 					</sharedLibraries>
-					<classifier>mule-application</classifier>
 				</configuration>
 			</plugin>
 		</plugins>
@@ -91,11 +89,6 @@
 			<classifier>mule-plugin</classifier>
 		</dependency>
 		<dependency>
-			<groupId>com.mycompany</groupId>
-			<artifactId>mysql-connector-java-8.0.16</artifactId>
-			<version>0.1</version>
-		</dependency>
-		<dependency>
 			<groupId>org.mule.connectors</groupId>
 			<artifactId>mule-objectstore-connector</artifactId>
 			<version>1.2.1</version>
@@ -113,6 +106,11 @@
 			<version>1.0.4</version>
 			<classifier>raml</classifier>
 			<type>zip</type>
+		</dependency>
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>5.1.48</version>
 		</dependency>
 	</dependencies>
 
