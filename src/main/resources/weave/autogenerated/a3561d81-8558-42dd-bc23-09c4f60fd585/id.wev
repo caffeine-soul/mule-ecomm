@@ -1,0 +1,5 @@
+%dw 2.0
+
+type auto_a3561d81_8558_42dd_bc23_09c4f60fd585_Output_Variables_order_id = {|  |} {"typeAlias": "Serializable",
+"typeId": "java.io.Serializable"}
+

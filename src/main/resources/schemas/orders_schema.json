@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "address": {
+      "type": "string"
+    },
+    "payment_mode": {
+      "type": "string"
+    },
+    "total_price": {
+      "type": "integer"
+    },
+    "user_id": {
+      "type": "integer"
+    },
+    "item_quantity": {
+        "type": "integer"
+    },
+    "status": {
+      "type": "string"
+    },
+    "delivery_date": {
+    	"type": "string",
+    	"format": "date-time"
+    }
+},
+"required": ["payment_mode", "total_price", "item_quantity", "user_id"]
+}

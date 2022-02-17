@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns:email="http://www.mulesoft.org/schema/mule/email"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd">
+	<configuration-properties doc:name="Configuration properties" doc:id="252b9bac-f89b-4dcd-a095-ee4ac86dba4e" file="config.yaml" />
+	<salesforce:sfdc-config name="Salesforce_Config_mule_ecomm" doc:name="Salesforce Config" doc:id="d17073c3-9843-49c4-adfc-d5e7920710da" >
+		<salesforce:basic-connection username="${salesforce.username}" password="${salesforce.password}" securityToken="${salesforce.token}" />
+	</salesforce:sfdc-config>
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="712b1cad-1168-4bc6-8306-41e553eabbde" >
+		<db:my-sql-connection host="${mysql.hostname}" port="${mysql.port}" user="${mysql.username}" password="${mysql.password}" database="${mysql.db_name}" />
+	</db:config>
+	<os:object-store name="Object_store" doc:name="Object store" doc:id="c1d919bf-8537-46c8-b557-0587c74ac5ed" />
+	<configuration doc:name="Configuration" doc:id="2c428360-788f-45c5-88c0-f3d00807951c" defaultErrorHandler-ref="globalError_Handler" />
+	<email:smtp-config name="Email_SMTP" doc:name="Email SMTP" doc:id="db85a387-a444-4461-8dda-f01e8a07c8fa" >
+		<email:smtps-connection host="smtp.gmail.com" user="cu.16bc1798@gmail.com" password="anhsirK03." >
+			<tls:context >
+				<tls:trust-store insecure="true" />
+			</tls:context>
+		</email:smtps-connection>
+	</email:smtp-config>
+	<error-handler name="globalError_Handler" doc:id="94c7b3b7-1328-4e5c-89b4-b61df985a362" >
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="213d5191-c4f1-430f-91f7-7eb595dd0204" type="ORDERS: OUT_OF_STOCK">
+			<logger level="INFO" doc:name="Logger" doc:id="0502bfb8-a42f-4213-bd1d-9544ceb63184" message="out of stock"/>
+			<ee:transform doc:name="Transform Message" doc:id="ccc303ae-09ce-4ae3-8f4e-7456c8b745d1" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": error.description
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+		</on-error-continue>
+	</error-handler>
+</mule>

@@ -1,0 +1,12 @@
+{
+"items": [
+{
+  "item_id":1,
+  "item_quantity": 5
+}
+],
+"payment_mode": "online",
+"total_price": 500 ,
+"address": "Oxford Street, England",
+"delivery_date": "2002-10-02T10:00:00+05:30"
+}

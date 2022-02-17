@@ -1,0 +1,14 @@
+%dw 2.0
+
+type auto_91254911_3b71_4dc8_afe4_583c1bf21a20_Output_Payload = {
+  payment_mode: String, 
+  delivery_date?: String, 
+  address?: String, 
+  total_price?: Number, 
+  user_id?: Number, 
+  payment_id?: String, 
+  items: Array<{    item_id: Number,     item_quantity: Number,     _?: Any  }>, 
+  status?: String, 
+  _?: Any
+}
+

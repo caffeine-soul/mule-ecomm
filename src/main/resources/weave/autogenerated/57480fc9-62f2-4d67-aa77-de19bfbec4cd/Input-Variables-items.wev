@@ -1,0 +1,4 @@
+%dw 2.0
+
+type auto_57480fc9_62f2_4d67_aa77_de19bfbec4cd_Input_Variables_items = Array<Any>
+

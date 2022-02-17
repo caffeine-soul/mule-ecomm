@@ -1,0 +1,13 @@
+salesforce:
+  username: "deepak.g.mundhra@apisero.com"
+  password: "D@eepak95"
+  token: "AOGwTbdO6XiWmTrhDRcHydyt"
+
+mysql:
+  hostname: "database-2.cbv0op0onxhv.us-east-1.rds.amazonaws.com"
+  db_name: "ecomm_db"
+  username: "admin"
+  password: "Ecomm.123"
+  port: "3306"
+  
+
