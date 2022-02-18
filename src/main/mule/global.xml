@@ -19,7 +19,7 @@ http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/
 	<os:object-store name="Object_store" doc:name="Object store" doc:id="c1d919bf-8537-46c8-b557-0587c74ac5ed" />
 	<configuration doc:name="Configuration" doc:id="2c428360-788f-45c5-88c0-f3d00807951c" defaultErrorHandler-ref="globalError_Handler" />
 	<email:smtp-config name="Email_SMTP" doc:name="Email SMTP" doc:id="db85a387-a444-4461-8dda-f01e8a07c8fa" >
-		<email:smtps-connection host="smtp.gmail.com" user="cu.16bc1798@gmail.com" password="anhsirK03." >
+		<email:smtps-connection host="smtp.gmail.com" user="cu.16bc1798@gmail.com" password="anhsirK03." port="587">
 			<tls:context >
 				<tls:trust-store insecure="true" />
 			</tls:context>
