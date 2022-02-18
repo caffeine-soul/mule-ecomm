@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns:os="http://www.mulesoft.org/schema/mule/os"
-	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
-	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+<mule xmlns:gmail="http://www.mulesoft.org/schema/mule/gmail" xmlns:email="http://www.mulesoft.org/schema/mule/email"
+	xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
 http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
-http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd">
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd
+http://www.mulesoft.org/schema/mule/gmail http://www.mulesoft.org/schema/mule/gmail/current/mule-gmail.xsd">
 	<flow name="PostUsers" doc:id="878053cb-2edc-4e5a-a6a3-88f5c37071e2" >
 		<ee:transform doc:name="Transform Message" doc:id="070de2ac-25d5-4b21-a47e-ebf4a016ae20" >
 			<ee:message >
@@ -366,7 +367,7 @@ payload.items map(val, index) -> {
 		</db:listener>
 		<set-variable value="#[true]" doc:name="flag" doc:id="69c7c976-a612-469a-a190-35b2ad9053c6" variableName="flag"/>
 		<choice doc:name="Choice" doc:id="50e47a3c-9453-4f28-b446-7f3fa078b0f7" >
-						<when expression="#[payload is Null]">
+						<when expression="#[sizeOf(payload) == 0]">
 				<set-variable value="#[false]" doc:name="flag to False" doc:id="83ea9915-9f57-44f2-a215-afad71e1541f" variableName="flag"/>
 				<logger level="INFO" doc:name="Logger" doc:id="33e2ea42-b459-4849-a5d6-344c640b8475" />
 			
@@ -394,23 +395,28 @@ payload.items map(val, index) -> {
 			<db:sql><![CDATA[SELECT DISTINCT(wishlist_id) as wishlist_id FROM wishlist_details WHERE item_id=:id]]></db:sql>
 			<db:input-parameters><![CDATA[#[{"id": payload.item_id}]]]></db:input-parameters>
 		</db:select>
-				<logger level="INFO" doc:name="Logger" doc:id="9263cb5c-ba4c-49b1-83df-a4b14dbad0aa" message="#[payload]" />
-				<foreach doc:name="For Each" doc:id="88573184-0257-43a0-88cd-0eb9da944e44" collection="#[payload]">
+				<choice doc:name="Choice" doc:id="c52a0b78-f79b-4ce9-be2f-08842c618f95">
+					<when expression="#[sizeOf(payload) != 0]">
+						<logger level="INFO" doc:name="Logger" doc:id="9263cb5c-ba4c-49b1-83df-a4b14dbad0aa" message="#[payload]" />
+						<foreach doc:name="For Each" doc:id="88573184-0257-43a0-88cd-0eb9da944e44" collection="#[payload]">
 			<db:select doc:name="Select" doc:id="62aac7eb-56da-43f9-8bd0-faa9c793a36e" config-ref="Database_Config">
 				<db:sql><![CDATA[SELECT DISTINCT(user_id) as user_id FROM wishlist WHERE id=:id]]></db:sql>
 				<db:input-parameters><![CDATA[#[{"id": payload.wishlist_id}]]]></db:input-parameters>
 			</db:select>
 			<logger level="INFO" doc:name="Logger" doc:id="37f02539-c3fd-452c-ab42-2d08048a72ef" />
 			<foreach doc:name="For Each" doc:id="dff0d996-311c-4288-b8fd-dbad5dbae935" collection="#[payload]">
-				<salesforce:query doc:name="Query" doc:id="992b12c1-4dbf-47a1-83f6-99e2696e585b" config-ref="Salesforce_Config_mule_ecomm">
-					<salesforce:salesforce-query><![CDATA[SELECT address__c, full_name__c from user_table__c where id__c = :id]]></salesforce:salesforce-query>
-					<salesforce:parameters><![CDATA[#[output application/java
+				<ee:transform doc:name="Transform Message" doc:id="78b27a23-2771-4f38-a875-bab8670ff46d" >
+									<ee:message >
+										<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
 ---
-{
-	"id" : payload.user_id
-}]]]></salesforce:parameters>
-				</salesforce:query>
-				<email:send doc:name="Send" doc:id="313647d3-1476-4721-8107-bcc8d470256d" config-ref="Email_SMTP" fromAddress='#["cu.16bc1798@gmail.com"]' subject="MuleEcom- Wishlist Alert!">
+[{
+	"Address__c": "krishna03maheshwari@gmail.com" as String,
+	"full_name__c": "Krishna" as String
+}]]]></ee:set-payload>
+									</ee:message>
+								</ee:transform>
+								<email:send doc:name="Send" doc:id="313647d3-1476-4721-8107-bcc8d470256d" config-ref="Email_SMTP" fromAddress='#["cu.16bc1798@gmail.com"]' subject="MuleEcom- Wishlist Alert!">
 					<email:to-addresses>
 						<email:to-address value="#[payload[0].Address__c]" />
 					</email:to-addresses>
@@ -421,7 +427,12 @@ payload.items map(val, index) -> {
 				<logger level="INFO" doc:name="Logger" doc:id="b43575e0-ea97-45a0-b4f2-d4bffca657b3" message="#[payload]" />
 			</foreach>
 		</foreach>
-				<logger level="INFO" doc:name="Logger" doc:id="8e9f2bbc-1e30-4bb2-867c-fead3133fee3" message="#[payload]" />
+						<logger level="INFO" doc:name="Logger" doc:id="8e9f2bbc-1e30-4bb2-867c-fead3133fee3" message="#[payload]" />
+					</when>
+					<otherwise >
+						<logger level="INFO" doc:name="Logger" doc:id="632f04c0-2d3e-4086-adf1-37c3de05f9cb" message="Item not present in any wishlist!"/>
+					</otherwise>
+				</choice>
 			</when>
 			<otherwise >
 				<logger level="INFO" doc:name="Logger" doc:id="4ff1a497-08f5-4a1f-9c18-32ec355a366a" message="No modification detected in the inventory!"/>
