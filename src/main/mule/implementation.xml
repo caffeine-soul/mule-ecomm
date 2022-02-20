@@ -38,7 +38,8 @@ output application/java
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<db:insert doc:name="Insert" doc:id="21673190-81bb-4f40-a387-587005b0d5db" config-ref="Database_Config">
+		<db:insert doc:name="Wishlist Creation" doc:id="21673190-81bb-4f40-a387-587005b0d5db" config-ref="Database_Config">
+			<error-mapping sourceType="DB:QUERY_EXECUTION" targetType="USER:DUPLICATE_USER" />
 			<db:sql ><![CDATA[INSERT INTO wishlist VALUES(:id, :user_id, :last_modified_at);]]></db:sql>
 			<db:input-parameters ><![CDATA[#[payload]]]></db:input-parameters>
 		</db:insert>
@@ -47,7 +48,10 @@ output application/java
                 <ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
-"User Created Successfully!"]]></ee:set-payload>
+{
+	"message": "User Created Successfully!"
+}
+]]></ee:set-payload>
             </ee:message>
         </ee:transform>
         
@@ -63,9 +67,14 @@ output application/json
 		</salesforce:query>
 		<choice doc:name="Choice" doc:id="85bd63fb-3f63-4fbf-9ae9-5d6e21d7ceab" >
 			<when expression="#[vars.query_var[0].Password__c == message.attributes.headers.user_password]">
-				<salesforce:delete doc:name="Delete" doc:id="4ad1eff9-25a8-47da-9d6c-61109ba8500b" config-ref="Salesforce_Config_mule_ecomm">
-					<salesforce:ids ><![CDATA[#[[payload[0].Name default " " as String]]]]></salesforce:ids>
+				<set-variable value="#[message.attributes.headers.user_id]" doc:name="user_id" doc:id="d9805e11-658a-43df-94e5-19dd9190f58e" variableName="user_id"/>
+				<salesforce:delete doc:name="Delete User" doc:id="4ad1eff9-25a8-47da-9d6c-61109ba8500b" config-ref="Salesforce_Config_mule_ecomm">
+					<salesforce:ids ><![CDATA[#[[vars.query_var[0].Name default " " as String]]]]></salesforce:ids>
 				</salesforce:delete>
+				<db:delete doc:name="Delete Wishlist" doc:id="83e6301a-de9a-46fb-8e35-8430993f1d82" config-ref="Database_Config">
+					<db:sql ><![CDATA[DELETE FROM wishlist WHERE user_id = :user_id]]></db:sql>
+					<db:input-parameters ><![CDATA[#[{"user_id":vars.user_id default 0 as Number}]]]></db:input-parameters>
+				</db:delete>
 				<logger level="INFO" doc:name="Logger" doc:id="8a3007bf-3acf-471c-b7fa-78b3931bf1a1" message="#[payload.items.exception]"/>
 				<ee:transform>
             <ee:message>
@@ -77,13 +86,19 @@ output application/json
         </ee:transform>
 			</when>
 			<otherwise >
-				<logger level="INFO" doc:name="Copy_of_Logger" doc:id="3e369753-7377-4a62-9251-2483b80b58f6" message="default" />
+				<logger level="INFO" doc:name="Logger" doc:id="3e369753-7377-4a62-9251-2483b80b58f6" message="default" />
 				<ee:transform doc:name="Transform Message" doc:id="ff893d16-81ed-47f4-a48c-773205bc0afd" >
 					<ee:message >
 						<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
 ---
-"User doesn't exist!"]]></ee:set-payload>
+if (sizeOf(vars.query_var) != 0) {
+	"message": "Incorrect Password Provided; Please check your credentials!" 
+}
+else {
+	"message": "User doesn't exist!" 
+}
+]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
 			</otherwise>
@@ -133,7 +148,13 @@ output application/json
 						<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
 ---
-"User doesn't exist!"]]></ee:set-payload>
+if (sizeOf(vars.query_var) != 0) {
+	"message": "Incorrect Password Provided; Please check your credentials!" 
+}
+else {
+	"message": "User doesn't exist!" 
+}
+]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
 			</otherwise>
