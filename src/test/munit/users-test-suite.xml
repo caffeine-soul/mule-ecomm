@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd http://www.mulesoft.org/schema/mule/munit-tools http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd 
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd http://www.mulesoft.org/schema/mule/munit-tools http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd 
 http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
-http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
     <munit:config name="mule-ecommerce-project-apikit-test.xml" />
-    <http:request-config name="HTTP_Request_Configuration" basePath="/api">
+    <http:request-config name="HTTP_Request_Configuration_munit" basePath="/api">
         <http:request-connection host="localhost" port="8081" />
     </http:request-config>
     <munit:test name="put:\users:application\json:mule-ecommerce-project-config-200-application\json-FlowTest" description="Verifying functionality of [put:\users:application\json:mule-ecommerce-project-config-200-application\json]">
@@ -11,58 +12,230 @@ http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/cu
             <munit:enable-flow-source value="mule-ecommerce-project-main" />
             <munit:enable-flow-source value="put:\users:application\json:mule-ecommerce-project-config" />
         </munit:enable-flow-sources>
-        <munit:behavior>
-            <munit:set-event doc:name="Set Event" doc:id="067b323a-da9a-46da-96a5-41e396ae7330" />
-			<set-payload value="#[MunitTools::getResourceAsString('scaffolder/request/put_users_application_json.json')]" />
-        </munit:behavior>
-        <munit:execution>
-            <http:request config-ref="HTTP_Request_Configuration" method="PUT" path="/users">
-                <http:headers>#[{"user_password":"","Accept":"application/json","user_id":"","Content-Type":"application/json"}]</http:headers>
+		<munit:execution>
+			<flow-ref doc:name="createUser" doc:id="cf7fad97-eb94-461e-9efa-f0450a3f2fa9" name="createUser"/>
+			<ee:transform doc:name="Transform Message" doc:id="61de33d7-11b4-4999-a42f-8a4841a301f2">
+				<ee:message>
+					<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  "contact_number": "9876787656"
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<http:request config-ref="HTTP_Request_Configuration_munit" method="PUT" path="/users">
+				<http:headers><![CDATA[#[{"user_password":"pass@123","Accept":"application/json","user_id":999999999,"Content-Type":"application/json"}]]]></http:headers>
             </http:request>
+			<flow-ref doc:name="deleteUser" doc:id="0431c94c-d263-42d2-b7d3-6a72d6e1e2a8" name="deleteUser"/>
         </munit:execution>
         <munit:validation>
             <munit-tools:assert-that expression="#[attributes.statusCode]" is="#[MunitTools::equalTo(200)]" message="The HTTP Status code is not correct!" doc:name="Assert That Status Code is 200" />
-            <munit-tools:assert-that expression="#[output application/java ---write(payload, 'application/json') as String]" is="#[MunitTools::equalTo(MunitTools::getResourceAsString('scaffolder/response/put_200_users_application_json.json'))]" message="The response payload is not correct!" doc:name="Assert That - Payload is Expected" />
+            <munit-tools:assert-that expression="#[payload.message]" is='#[MunitTools::equalTo("User details Updated Successfully!")]' message="The response payload is not correct!" doc:name="Assert That - Payload is Expected" />
         </munit:validation>
     </munit:test>
-	<munit:test name="delete:\users:mule-ecommerce-project-config-200-application\json-FlowTest" description="Verifying functionality of [delete:\users:mule-ecommerce-project-config-200-application\json]" ignore="true">
+	<munit:test name="delete:\users:mule-ecommerce-project-config-200-application\json-FlowTest" description="Verifying functionality of [delete:\users:mule-ecommerce-project-config-200-application\json]">
         <munit:enable-flow-sources>
             <munit:enable-flow-source value="mule-ecommerce-project-main" />
             <munit:enable-flow-source value="delete:\users:mule-ecommerce-project-config" />
         </munit:enable-flow-sources>
         <munit:execution>
-            <http:request config-ref="HTTP_Request_Configuration" method="DELETE" path="/users">
-                <http:headers>#[{"user_password":"","Accept":"application/json","user_id":""}]</http:headers>
+            <flow-ref doc:name="createUser" doc:id="6992099a-b353-42f5-9eb6-c82608878b32" name="createUser"/>
+			<http:request config-ref="HTTP_Request_Configuration_munit" method="DELETE" path="/users">
+                <http:headers><![CDATA[#[{"user_password":"pass@123","Accept":"application/json","user_id":999999999}]]]></http:headers>
             </http:request>
         </munit:execution>
         <munit:validation>
             <munit-tools:assert-that expression="#[attributes.statusCode]" is="#[MunitTools::equalTo(200)]" message="The HTTP Status code is not correct!" doc:name="Assert That Status Code is 200" />
-            <munit-tools:assert-that expression="#[output application/java ---write(payload, 'application/json') as String]" is="#[MunitTools::equalTo(MunitTools::getResourceAsString('scaffolder/response/delete_200_users_application_json.json'))]" message="The response payload is not correct!" doc:name="Assert That - Payload is Expected" />
+            <munit-tools:assert-that expression="#[payload.message]" is='#[MunitTools::equalTo("User deleted Successfully!")]' message="The response payload is not correct!" doc:name="Assert That - Payload is Expected" />
         </munit:validation>
     </munit:test>
-	<munit:test name="post:\users:application\json:mule-ecommerce-project-config-201-application\json-FlowTest" description="Verifying functionality of [post:\users:application\json:mule-ecommerce-project-config-201-application\json]" ignore="true">
+	<munit:test name="post:\users:application\json:mule-ecommerce-project-config-201-application\json-FlowTest" description="Verifying functionality of [post:\users:application\json:mule-ecommerce-project-config-201-application\json]">
         <munit:enable-flow-sources>
             <munit:enable-flow-source value="mule-ecommerce-project-main" />
             <munit:enable-flow-source value="post:\users:application\json:mule-ecommerce-project-config" />
         </munit:enable-flow-sources>
         <munit:execution>
             <munit:set-event doc:name="Set Event" doc:id="d3b17794-afea-423e-b956-15ae821fcdab" >
-				<munit:payload value='{&#10;    "id": 999999998,&#10;    "password": "pass@123",&#10;    "address": "krishna03maheshwari@gmail.com",&#10;    "contact_number": "9878987890",&#10;    "full_name": "dummy_user"&#10;}' encoding="UTF-8" mediaType="application/json" />
+				<munit:payload value='{&#10;    "id": 999999999,&#10;    "password": "pass@123",&#10;    "address": "krishna03maheshwari@gmail.com",&#10;    "contact_number": "9878987890",&#10;    "full_name": "dummy_user"&#10;}' encoding="UTF-8" mediaType="application/json" />
 			</munit:set-event>
-			<http:request config-ref="HTTP_Request_Configuration" method="POST" path="/users">
-                <http:headers>#[{"Accept":"application/json","Content-Type":"application/json"}]</http:headers>
+			<http:request config-ref="HTTP_Request_Configuration_munit" method="POST" path="/users">
+                <http:headers><![CDATA[#[{"Accept":"application/json","Content-Type":"application/json"}]]]></http:headers>
             </http:request>
+			<flow-ref doc:name="deleteUser" doc:id="429847ee-be15-46fc-8c12-18dda8e4228d" name="deleteUser"/>
         </munit:execution>
         <munit:validation>
             <munit-tools:assert-that expression="#[attributes.statusCode]" is="#[MunitTools::equalTo(201)]" message="The HTTP Status code is not correct!" doc:name="Assert That Status Code is 201" />
             <munit-tools:assert-that expression="#[payload.message]" is='#[MunitTools::equalTo("User Created Successfully!")]' message="The response payload is not correct!" doc:name="Assert That - Payload is Expected" />
         </munit:validation>
     </munit:test>
+	<munit:test name="post:\orders:application\json:mule-ecommerce-project-config-201-application\json-FlowTest" description="Verifying functionality of [post:\orders:application\json:mule-ecommerce-project-config-201-application\json]">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="mule-ecommerce-project-main" />
+            <munit:enable-flow-source value="post:\orders:application\json:mule-ecommerce-project-config" />
+        </munit:enable-flow-sources>
+		<munit:behavior>
+			<munit-tools:mock-when doc:name="Mock when" doc:id="0bfcfdb3-29fb-4445-8671-2a6191ac3310" processor="flow-ref">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="retrieve_order_id" attributeName="doc:name" />
+					<munit-tools:with-attribute whereValue="623acd73-d690-4fe2-ad58-7ba1f9b62a2c" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:variables >
+						<munit-tools:variable key="order_id" value="#[999999999]" />
+					</munit-tools:variables>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+			<flow-ref doc:name="createUser" doc:id="1402f187-90c6-4aff-9f46-31c65e91a758" name="createUser"/>
+			<flow-ref doc:name="insert_in_inventory" doc:id="8013205c-cd05-40bf-a8b7-8ffe4d9629da" name="insert_in_inventory"/>
+			<ee:transform doc:name="Transform Message" doc:id="ae64dc54-eab3-4e0c-af7f-2cc020e3093b" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+"items": [
+{
+  "item_id":999999999,
+  "item_quantity": 1
+}
+],
+"payment_mode": "Dummy",
+"address": "Dummy"
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<http:request config-ref="HTTP_Request_Configuration_munit" method="POST" path="/orders" responseTimeout="10000000">
+                <http:headers><![CDATA[#[{"user_password":"pass@123","Accept":"application/json","user_id": 999999999,"Content-Type":"application/json"}]]]></http:headers>
+            </http:request>
+			<flow-ref doc:name="delete_order" doc:id="1a9d57d3-f455-4b86-8c48-27d9bab0bd2d" name="delete_order" target="del_ord"/>
+			<flow-ref doc:name="delete_from_inventory" doc:id="40c45a0e-60f4-415c-b1f1-fbf885e64bb2" name="delete_from_inventory" target="del_ord"/>
+			<flow-ref doc:name="deleteUser" doc:id="cd30b84f-52ec-4e81-a2f8-fe096c84401c" name="deleteUser" target="del_use"/>
+        </munit:execution>
+        <munit:validation>
+            <munit-tools:assert-that expression="#[attributes.statusCode]" is="#[MunitTools::equalTo(201)]" message="The HTTP Status code is not correct!" doc:name="Assert That Status Code is 201" />
+            <munit-tools:assert-that expression="#[payload.message]" is='#[MunitTools::equalTo("Order with ID 999999999 Created Successfully!")]' message="The response payload is not correct!" doc:name="Assert That - Payload is Expected" />
+        </munit:validation>
+    </munit:test>
+	<munit:test name="put:\orders:application\json:mule-ecommerce-project-config-200-application\json-FlowTest" description="Verifying functionality of [put:\orders:application\json:mule-ecommerce-project-config-200-application\json]">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="mule-ecommerce-project-main" />
+            <munit:enable-flow-source value="put:\orders:application\json:mule-ecommerce-project-config" />
+        </munit:enable-flow-sources>
+        <munit:execution>
+            <flow-ref doc:name="createUser" doc:id="6bfc16a2-d0c6-4c27-8353-bf92b86d3ae8" name="createUser"/>
+			<flow-ref doc:name="insert_in_inventory" doc:id="ba705880-e9c2-40be-9449-f9aed4d2db4c" name="insert_in_inventory"/>
+			<flow-ref doc:name="create_order" doc:id="5172f89b-c278-4ab7-8b7c-97813f233dc3" name="create_order"/>
+			<ee:transform doc:name="Transform Message" doc:id="5bbb1c74-2f4d-4628-bf39-ba85de680277" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+    "delivery_date": "2022-02-17T12:36:30.251763Z",
+    "address": "Sodhi Colony, New Delhi"
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<http:request config-ref="HTTP_Request_Configuration_munit" method="PUT" path="/orders">
+				<http:headers><![CDATA[#[{"user_password":"pass@123","Accept":"application/json","user_id":999999999,"Content-Type":"application/json"}]]]></http:headers>
+            </http:request>
+			<flow-ref doc:name="delete_order" doc:id="5f705e28-5485-4eab-9a5f-af8de3fd2c12" name="delete_order" target="del_ord"/>
+			<flow-ref doc:name="delete_from_inventory" doc:id="2a952c49-d36e-47f4-96e9-60bdf54fdcaa" name="delete_from_inventory" target="del_inv"/>
+			<flow-ref doc:name="deleteUser" doc:id="c0823757-b6d2-491a-be9a-a3df8db2071e" name="deleteUser" target="del_us"/>
+        </munit:execution>
+        <munit:validation>
+            <munit-tools:assert-that expression="#[attributes.statusCode]" is="#[MunitTools::equalTo(200)]" message="The HTTP Status code is not correct!" doc:name="Assert That Status Code is 200" />
+            <munit-tools:assert-that expression="#[payload.message]" is='#[MunitTools::equalTo("Order details Updated Successfully!")]' message="The response payload is not correct!" doc:name="Assert That - Payload is Expected" />
+        </munit:validation>
+    </munit:test>
+        <munit:test name="get:\orders:mule-ecommerce-project-config-200-application\json-FlowTest" description="Verifying functionality of [get:\orders:mule-ecommerce-project-config-200-application\json]">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="mule-ecommerce-project-main" />
+            <munit:enable-flow-source value="get:\orders:mule-ecommerce-project-config" />
+        </munit:enable-flow-sources>
+        <munit:execution>
+            <flow-ref doc:name="createUser" doc:id="5564b3f7-e12f-47d6-8547-f1bbd7f201b2" name="createUser"/>
+			<flow-ref doc:name="insert_in_inventory" doc:id="9c990fe9-a281-4257-8a4f-dc9d7dc25366" name="insert_in_inventory"/>
+			<flow-ref doc:name="create_order" doc:id="85e3f1f7-7cb0-4cda-9ea4-db5219f12acb" name="create_order"/>
+			<http:request config-ref="HTTP_Request_Configuration_munit" method="GET" path="/orders">
+                <http:headers><![CDATA[#[{"user_password":"pass@123","Accept":"application/json","user_id":999999999}]]]></http:headers>
+            </http:request>
+			<flow-ref doc:name="delete_order" doc:id="e74b9ed3-8224-40a8-a9b4-d5db03405fe3" name="delete_order" target="del_ord"/>
+			<flow-ref doc:name="delete_from_inventory" doc:id="1a61d073-4c2d-4b02-be90-e188f50850a1" name="delete_from_inventory" target="del_inv"/>
+			<flow-ref doc:name="deleteUser" doc:id="c67ebc1c-f6f1-41d3-92de-a7f650ecd751" name="deleteUser" target="del_user"/>
+        </munit:execution>
+        <munit:validation>
+            <munit-tools:assert-that expression="#[attributes.statusCode]" is="#[MunitTools::equalTo(200)]" message="The HTTP Status code is not correct!" doc:name="Assert That Status Code is 200" />
+			<munit-tools:assert-equals doc:name="Assert equals" doc:id="fb0ed38e-4770-483f-a9f2-468fcd6c3ef7" actual="#[payload]" expected='#[[&#10;  {&#10;    payment_mode: "dummy",&#10;    delivery_date: "2022-02-21T08:58:45",&#10;    address: "dummy_address",&#10;    total_price: 1500.0,&#10;    user_id: 999999999,&#10;    payment_id: "dummy_payment",&#10;    id: 999999999,&#10;    item_quantity: 1,&#10;    status: "dummy",&#10;    items: [&#10;      {&#10;        quantity_ordered: 10,&#10;        item_id: 999999999&#10;      }&#10;    ]&#10;  }&#10;]]'/>
+        </munit:validation>
+    </munit:test>
+    
+		
+	
 	<flow name="createUser" doc:id="e5614856-dde1-40b0-86f5-d5f077380798" >
-		<set-payload value='#[{&#10;    "id": 999999999,&#10;    "password": "pass@123",&#10;    "address": "krishna03maheshwari@gmail.com",&#10;    "contact_number": "9878987890",&#10;    "full_name": "dummy_user"&#10;}]' doc:name="Set Payload" doc:id="f8411a0e-1e77-4f9f-bb8a-f7e8bf41896d" />
-		<salesforce:create doc:name="Create" doc:id="fa1b6a58-a754-4ee8-8fdb-043d12d67c6b" config-ref="Salesforce_Config_mule_ecomm" type="user_table__c"/>
+		<ee:transform doc:name="Transform Message" doc:id="d22d4203-66fb-4068-b8fa-4e5f5a4cdb3f" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+[{
+	full_name__c: "dummy_user",
+	Address__c: "krishna03maheshwari@gmail.com",
+	Password__c: "pass@123",
+	contact_number__c: "9878987890",
+	id__c: 999999999,
+}]
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<salesforce:create doc:name="Create" doc:id="fa1b6a58-a754-4ee8-8fdb-043d12d67c6b" config-ref="Salesforce_Config_mule_ecomm" type="user_table__c" target="sf_create">
+			<reconnect-forever />
+		</salesforce:create>
+		<db:insert doc:name="Insert" doc:id="2d0eb75b-8e7c-440a-900d-d05d53ac373b" config-ref="Database_Config" target="db_create">
+			<db:sql ><![CDATA[INSERT INTO wishlist VALUES("w999999999", 999999999, "2022-02-21 08:58:45");]]></db:sql>
+		</db:insert>
+		<logger level="INFO" doc:name="Logger" doc:id="0fc2bacb-6494-40f6-b317-34e1130b8979" message="#[vars.create_flow]"/>
 	</flow>
 	<flow name="deleteUser" doc:id="075a866a-bea9-496a-9fc2-a1032bf8c983" >
-		<salesforce:delete doc:name="Delete" doc:id="c14d0827-3552-4224-9db7-a5c8ec3b0fcd" config-ref="Salesforce_Config_mule_ecomm"/>
+		<salesforce:query doc:name="Query" doc:id="0b6ce461-501c-4851-b9f7-a1115c6a116f" config-ref="Salesforce_Config_mule_ecomm" target="query_var_munit">
+			<reconnect-forever />
+			<salesforce:salesforce-query ><![CDATA[SELECT Password__c, id__c, Name from user_table__c where id__c = 999999999]]></salesforce:salesforce-query>
+		</salesforce:query>
+		<salesforce:delete doc:name="Delete" doc:id="c14d0827-3552-4224-9db7-a5c8ec3b0fcd" config-ref="Salesforce_Config_mule_ecomm" target="sf_delete">
+			<reconnect-forever />
+			<salesforce:ids ><![CDATA[#[[vars.query_var_munit[0].Name default " " as String]]]]></salesforce:ids>
+		</salesforce:delete>
+		<db:delete doc:name="Delete" doc:id="282b1c45-601d-40f6-82e0-32ed04a702f7" config-ref="Database_Config" target="db_delete">
+			<db:sql ><![CDATA[DELETE FROM wishlist WHERE user_id = 999999999]]></db:sql>
+		</db:delete>
+		<logger level="INFO" doc:name="Logger" doc:id="bda943be-6854-47e4-9b71-0f018069e3c9" message="#[vars.delete_flow]"/>
 	</flow>
+	<flow name="insert_in_inventory" doc:id="c50efb20-051a-484d-8ae4-9f82eedd2eac" >
+		<db:insert doc:name="Insert in Inventory" doc:id="f624e4cf-94bb-4fba-a52b-f8b7049a2c46" config-ref="Database_Config" target="insert_inv">
+			<db:sql ><![CDATA[INSERT into inventory VALUES (999999999, "dummy_item", 500, 40, now());]]></db:sql>
+		</db:insert>
+	</flow>
+	<flow name="delete_from_inventory" doc:id="4df1ae08-6e93-4fa3-be33-afa52d118c8c" >
+		<db:delete doc:name="Delete from Inventory" doc:id="4ccdea28-bc17-4af3-950d-0bee7e5c3cba" target="del_inv" config-ref="Database_Config">
+			<db:sql ><![CDATA[DELETE FROM inventory WHERE id = 999999999]]></db:sql>
+		</db:delete>
+	</flow>
+	<flow name="create_order" doc:id="f05e645b-a15d-4c1f-8c32-1f8a00e78f9e" >
+		<db:insert doc:name="Insert in Orders" doc:id="83b2dd01-ecf5-4528-b8c8-f46ee388b92a" config-ref="Database_Config" target="ins_orders">
+			<db:sql ><![CDATA[INSERT INTO orders VALUES (999999999, 999999999, 1500, 1, "dummy", "dummy_payment", "dummy", "dummy_address", "2022-02-21 08:58:45")]]></db:sql>
+		</db:insert>
+		<db:insert doc:name="Insert in Order_details" doc:id="2e921525-ab1a-4542-a202-c415252cddc5" target="ins_ord_det" config-ref="Database_Config">
+			<db:sql ><![CDATA[INSERT INTO order_details VALUES (999999999, 999999999, 10)]]></db:sql>
+		</db:insert>
+	</flow>
+	<flow name="delete_order" doc:id="785422f5-70a0-465e-bf48-1dbe5e90969c" >
+		<db:delete doc:name="Delete from Orders" doc:id="7ca1bdd2-278a-4f01-9168-805e1d6e6421" config-ref="Database_Config" target="del_ord_dets">
+			<db:sql ><![CDATA[DELETE FROM orders WHERE id = 999999999]]></db:sql>
+		</db:delete>
+	</flow>
+
+
 </mule>

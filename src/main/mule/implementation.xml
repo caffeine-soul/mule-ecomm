@@ -25,7 +25,9 @@ output application/java
 }]]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<salesforce:create doc:name="Create" doc:id="f57d6f72-5880-4754-b572-4453c702599a" config-ref="Salesforce_Config_mule_ecomm" type="user_table__c" target="user_create"/>
+		<salesforce:create doc:name="Create" doc:id="f57d6f72-5880-4754-b572-4453c702599a" config-ref="Salesforce_Config_mule_ecomm" type="user_table__c" target="user_create">
+			<reconnect />
+		</salesforce:create>
 		<ee:transform doc:name="Transform Message" doc:id="acce4647-0d71-468b-ac60-dd967d658cf5" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
@@ -53,11 +55,18 @@ output application/json
 }
 ]]></ee:set-payload>
             </ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="httpStatus" ><![CDATA[%dw 2.0
+output application/java
+---
+201]]></ee:set-variable>
+			</ee:variables>
         </ee:transform>
         
 	</flow>
 	<flow name="DeleteUsers" doc:id="3a4ede61-1f94-4b29-9cf8-94fb48557fc3" >
 		<salesforce:query doc:name="Query" doc:id="68f7aa36-7315-48d6-a40e-64e32b47d8de" config-ref="Salesforce_Config_mule_ecomm" target="query_var">
+			<reconnect />
 			<salesforce:salesforce-query ><![CDATA[SELECT Password__c, id__c, Name from user_table__c where id__c = :id]]></salesforce:salesforce-query>
 			<salesforce:parameters ><![CDATA[#[output application/java
 ---
@@ -69,6 +78,7 @@ output application/json
 			<when expression="#[vars.query_var[0].Password__c == message.attributes.headers.user_password]">
 				<set-variable value="#[message.attributes.headers.user_id]" doc:name="user_id" doc:id="d9805e11-658a-43df-94e5-19dd9190f58e" variableName="user_id"/>
 				<salesforce:delete doc:name="Delete User" doc:id="4ad1eff9-25a8-47da-9d6c-61109ba8500b" config-ref="Salesforce_Config_mule_ecomm">
+					<reconnect />
 					<salesforce:ids ><![CDATA[#[[vars.query_var[0].Name default " " as String]]]]></salesforce:ids>
 				</salesforce:delete>
 				<db:delete doc:name="Delete Wishlist" doc:id="83e6301a-de9a-46fb-8e35-8430993f1d82" config-ref="Database_Config">
@@ -110,6 +120,7 @@ else {
 </flow>
 	<flow name="UpdateUsers" doc:id="ce7f0740-2ec9-4a45-8522-4e6634a5513d" initialState="started">
 		<salesforce:query doc:name="Query" doc:id="3a07ccac-6a33-4571-a915-0505653568fe" config-ref="Salesforce_Config_mule_ecomm" target="query_var">
+			<reconnect />
 			<salesforce:salesforce-query><![CDATA[SELECT Password__c, id__c, Name from user_table__c where id__c = :id]]></salesforce:salesforce-query>
 			<salesforce:parameters><![CDATA[#[output application/java
 ---
@@ -133,6 +144,7 @@ output application/java
 					</ee:message>
 				</ee:transform>
 				<salesforce:update type="user_table__c" doc:name="Update" doc:id="95b97606-f5e5-4ce2-989a-aa7ca5b41f6d" config-ref="Salesforce_Config_mule_ecomm" >
+					<reconnect />
 				</salesforce:update>
 				<logger level="INFO" doc:name="Logger" doc:id="7b291dcc-5b13-45fa-b683-51e19c040d46" message="#[payload.items.exception]" />
 				<ee:transform doc:name="Transform Message" doc:id="d581a9f9-daaf-411e-a41d-da984019894b" >
@@ -264,9 +276,12 @@ else{
 				<ee:transform doc:name="Transform Message" doc:id="703d2d27-594b-4be0-831e-9c7a6dcc7c96" >
 					<ee:message >
 						<ee:set-payload ><![CDATA[%dw 2.0
-output application/java
+output application/json
 ---
-"Order details Updated Successfully!"
+{
+	"message": "Order details Updated Successfully!"
+}
+
 ]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
@@ -290,13 +305,8 @@ output application/java
 		</salesforce:query>
 		<choice doc:name="Choice" doc:id="b06958e1-9782-440f-8f5d-1fc29b6c992b" >
 			<when expression="#[vars.query_var[0].Password__c == message.attributes.headers.user_password]" >
-				<os:retrieve doc:name="RetrieveOrderID" doc:id="85ba631f-a40b-498c-a359-f900bb57550e" key="order_id" objectStore="Object_store" target="order_id">
-					<os:default-value ><![CDATA[#[1]]]></os:default-value>
-				</os:retrieve>
-				<os:store doc:name="OrderID" doc:id="a3446a4d-a0f9-476f-9310-744f319d31a4" key="order_id" objectStore="Object_store">
-					<os:value ><![CDATA[#[vars.order_id + 1]]]></os:value>
-				</os:store>
-			        <flow-ref doc:name="fetch_total_price" doc:id="52df60ab-7274-4557-a16e-e35508ab8c48" name="fetch_total_price" target="total_price"/>
+			        <flow-ref doc:name="retrieve_order_id" doc:id="623acd73-d690-4fe2-ad58-7ba1f9b62a2c" name="retrieve_order_id"/>
+				<flow-ref doc:name="fetch_total_price" doc:id="52df60ab-7274-4557-a16e-e35508ab8c48" name="fetch_total_price" target="total_price"/>
 				<flow-ref doc:name="update_inventory" doc:id="5a09ae22-5047-4d09-964b-a2412500413e" name="update_inventory" target="update_inventory" />
 				<flow-ref doc:name="insert_in_orders" doc:id="15fa206c-ea9b-4d42-9da1-5cbe46be3e08" name="insert_in_orders" target="orders_output"/>
 				<flow-ref doc:name="insert_in_order_details" doc:id="5d4c7139-2eb0-4886-9483-855cbfbc06a4" name="insert_in_order_details" target="order_details_output"/>
@@ -305,16 +315,27 @@ output application/java
                 <ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
-"Order with ID "++ vars.order_id as String ++" Created Successfully!"]]></ee:set-payload>
+{
+	"message": "Order with ID "++ vars.order_id as String ++" Created Successfully!"
+}
+]]></ee:set-payload>
             </ee:message>
         </ee:transform>
 			
 </when>
 			<otherwise>
-				<logger level="INFO" doc:name="Logger" doc:id="75ecd94b-c2e8-45e2-a0a9-ff23fb4aea25" message="#[vars.query_var]"/>
+				<logger level="INFO" doc:name="Logger" doc:id="75ecd94b-c2e8-45e2-a0a9-ff23fb4aea25" message="PostOders Flow: Default case in choice"/>
 			</otherwise>
 		</choice>
 	</flow>
+	<sub-flow name="retrieve_order_id" doc:id="ab372933-f05d-42b6-a6a8-fd4f499f1153" >
+		<os:retrieve doc:name="RetrieveOrderID" doc:id="85ba631f-a40b-498c-a359-f900bb57550e" key="order_id" objectStore="Object_store" target="order_id">
+					<os:default-value><![CDATA[#[1]]]></os:default-value>
+				</os:retrieve>
+		<os:store doc:name="OrderID" doc:id="a3446a4d-a0f9-476f-9310-744f319d31a4" key="order_id" objectStore="Object_store">
+					<os:value><![CDATA[#[vars.order_id + 1]]]></os:value>
+				</os:store>
+	</sub-flow>
 	<sub-flow name="insert_in_orders" doc:id="0d9a93e1-467d-4c8b-ae15-7e1486234b37">
 		<ee:transform doc:name="Transform Message" doc:id="8f6ebcdc-c65c-400b-af73-7ffd0476e7ad">
 			<ee:message>
