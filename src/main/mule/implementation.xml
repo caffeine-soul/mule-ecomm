@@ -81,7 +81,10 @@ output application/json
                 <ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
-"User deleted Successfully!"]]></ee:set-payload>
+{
+"message":"User deleted Successfully!"
+
+}]]></ee:set-payload>
             </ee:message>
         </ee:transform>
 			</when>
@@ -137,7 +140,10 @@ output application/java
 						<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
 ---
-"User details Updated Successfully!"]]></ee:set-payload>
+{
+	"message":"User details Updated Successfully!"
+
+}]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
 			</when>
