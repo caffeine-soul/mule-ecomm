@@ -22,10 +22,10 @@
                         <ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
-{message: "Bad request"}]]></ee:set-payload>
+{message: "Bad Request"}]]></ee:set-payload>
                     </ee:message>
                     <ee:variables>
-                        <ee:set-variable variableName="httpStatus">400</ee:set-variable>
+                        <ee:set-variable variableName="httpStatus"><![CDATA[400]]></ee:set-variable>
                     </ee:variables>
                 </ee:transform>
             </on-error-propagate>
@@ -130,7 +130,7 @@ output application/json
         <flow-ref doc:name="updateUsers" doc:id="8ba6e490-93ca-4e70-af1d-a4bae7294d76" name="UpdateUsers" />
     </flow>
     <flow name="delete:\users:mule-ecommerce-project-config">
-        <flow-ref doc:name="DeleteUsers" doc:id="4a768de0-af92-4999-ae77-a937535557c4" name="UpdateUsers" />
+        <flow-ref doc:name="DeleteUsers" doc:id="4a768de0-af92-4999-ae77-a937535557c4" name="DeleteUsers" />
     </flow>
     <flow name="post:\orders:application\json:mule-ecommerce-project-config">
         <flow-ref doc:name="PostOrders" doc:id="8f202b7c-eb0e-4727-935d-fe01deaa422f" name="PostOrders" />
