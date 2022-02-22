@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd 
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
+	
+	<flow name="PostUsers" doc:id="8d4464fc-e0d8-46ca-9c38-8b83c238aa88" >
+		<ee:transform doc:name="Transform Message" doc:id="6026c304-dc6a-4995-b939-39ea293095b8" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+[{
+	full_name__c: payload.full_name,
+	Address__c: payload.address,
+	Password__c: payload.password,
+	contact_number__c: payload.contact_number,
+	id__c: payload.id
+}]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<salesforce:create doc:name="Create" doc:id="20a0c428-7023-4e56-a70d-e54254cbb574" config-ref="Salesforce_Config_mule_ecomm" type="user_table__c" target="user_create">
+			<reconnect />
+		</salesforce:create>
+		<ee:transform doc:name="Transform Message" doc:id="29a9b933-e4af-44f3-a4c9-6816165fa857" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	id: "w" ++ (payload[0].id__c as String),
+	user_id: payload[0].id__c,
+	last_modified_at: now() as String {format: "yyyy-MM-dd HH:mm:ss"},
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<db:insert doc:name="Wishlist Creation" doc:id="7e59ac93-2eac-4f04-85a2-50728925a90a" config-ref="Database_Config">
+			<error-mapping sourceType="DB:QUERY_EXECUTION" targetType="USER:DUPLICATE_USER" />
+			<db:sql ><![CDATA[INSERT INTO wishlist VALUES(:id, :user_id, :last_modified_at);]]></db:sql>
+			<db:input-parameters ><![CDATA[#[payload]]]></db:input-parameters>
+		</db:insert>
+		<ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "User Created Successfully!"
+}
+]]></ee:set-payload>
+            </ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="httpStatus" ><![CDATA[%dw 2.0
+output application/java
+---
+201]]></ee:set-variable>
+			</ee:variables>
+        </ee:transform>
+        
+	</flow>
+	<flow name="DeleteUsers" doc:id="eb0f4c7a-a6bb-440e-9831-2f1b5459cddb" >
+		<salesforce:query doc:name="Query" doc:id="a889a786-b377-43e6-85d7-64652caf71c6" config-ref="Salesforce_Config_mule_ecomm" target="query_var">
+			<reconnect />
+			<salesforce:salesforce-query ><![CDATA[SELECT Password__c, id__c, Name from user_table__c where id__c = :id]]></salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[output application/java
+---
+{
+	"id" : message.attributes.headers.user_id default 0
+}]]]></salesforce:parameters>
+		</salesforce:query>
+		<choice doc:name="Choice" doc:id="a851cf0a-0ea0-4484-ab1c-6234a4252623" >
+			<when expression="#[vars.query_var[0].Password__c == message.attributes.headers.user_password]">
+				<set-variable value="#[message.attributes.headers.user_id]" doc:name="user_id" doc:id="672ef614-1886-49d5-9c0d-2874ba7eeb0c" variableName="user_id"/>
+				<salesforce:delete doc:name="Delete User" doc:id="231a5c20-db67-4f71-b2b4-6d8d38af24a5" config-ref="Salesforce_Config_mule_ecomm">
+					<reconnect />
+					<salesforce:ids ><![CDATA[#[[vars.query_var[0].Name default " " as String]]]]></salesforce:ids>
+				</salesforce:delete>
+				<db:delete doc:name="Delete Wishlist" doc:id="03c1a4da-d023-41d0-bbcb-4b2c93fbb399" config-ref="Database_Config">
+					<db:sql ><![CDATA[DELETE FROM wishlist WHERE user_id = :user_id]]></db:sql>
+					<db:input-parameters ><![CDATA[#[{"user_id":vars.user_id default 0 as Number}]]]></db:input-parameters>
+				</db:delete>
+				<logger level="INFO" doc:name="Logger" doc:id="cfbc421f-eae6-4b75-b569-4214326bac81" message="#[payload.items.exception]"/>
+				<ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+"message":"User deleted Successfully!"
+
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Logger" doc:id="78a61117-789e-4d97-bf43-bb1ab10b0b6e" message="default" />
+				<ee:transform doc:name="Transform Message" doc:id="74c6be39-aca0-4126-a300-dc16bdd78b2f" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+if (sizeOf(vars.query_var) != 0) {
+	"message": "Incorrect Password Provided; Please check your credentials!" 
+}
+else {
+	"message": "User doesn't exist!" 
+}
+]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+	
+</flow>
+	<flow name="UpdateUsers" doc:id="c923cd11-2cdd-43b9-847a-e1da1efab057" initialState="started">
+		<salesforce:query doc:name="Query" doc:id="c37d7fe5-7815-4d65-aad2-8c6ff8144b71" config-ref="Salesforce_Config_mule_ecomm" target="query_var">
+			<reconnect />
+			<salesforce:salesforce-query><![CDATA[SELECT Password__c, id__c, Name from user_table__c where id__c = :id]]></salesforce:salesforce-query>
+			<salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	"id" : message.attributes.headers.user_id default 0
+}]]]></salesforce:parameters>
+		</salesforce:query>
+		<choice doc:name="Choice" doc:id="d6bc7f76-fd64-4674-a790-d4e13b06f214" >
+			<when expression="#[vars.query_var[0].Password__c == message.attributes.headers.user_password]" >
+				<ee:transform doc:name="Transform Message" doc:id="ab4dc9e0-8775-435d-b92f-5f79d47404f6">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+[{
+	Address__c: payload.address,
+	Password__c: payload.password,
+	contact_number__c: payload.contact_number,
+	id: vars.query_var[0].Name
+}]]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<salesforce:update type="user_table__c" doc:name="Update" doc:id="a3e52090-79b9-4347-b3eb-344c1e8a4f69" config-ref="Salesforce_Config_mule_ecomm" >
+					<reconnect />
+				</salesforce:update>
+				<logger level="INFO" doc:name="Logger" doc:id="efb6a00d-a35c-424a-93ba-d75e6728d472" message="#[payload.items.exception]" />
+				<ee:transform doc:name="Transform Message" doc:id="6495eef9-88d9-4a7a-9ec3-1280e13f4a8b" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message":"User details Updated Successfully!"
+
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Logger" doc:id="48b058f3-3de1-4103-9de8-5e0304bcdc0e" message="default" />
+				<ee:transform doc:name="Transform Message" doc:id="e087033c-bf4f-45e4-940f-ed506fe9943f" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+if (sizeOf(vars.query_var) != 0) {
+	"message": "Incorrect Password Provided; Please check your credentials!" 
+}
+else {
+	"message": "User doesn't exist!" 
+}
+]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+	</flow>
+	
+	
+</mule>
