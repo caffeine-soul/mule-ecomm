@@ -1,0 +1,8 @@
+%dw 2.0
+
+type auto_ab372933_f05d_42b6_a6a8_fd4f499f1153_Output_Variables_orders_output = {|
+  affectedRows?: Number, 
+  generatedKeys?: { _?: Number }
+|} {"typeAlias": "StatementResult",
+"typeId": "org.mule.extension.db.api.StatementResult"}
+

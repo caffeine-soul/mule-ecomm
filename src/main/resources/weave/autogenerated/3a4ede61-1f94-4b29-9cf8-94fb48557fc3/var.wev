@@ -1,0 +1,12 @@
+%dw 2.0
+
+type auto_3a4ede61_1f94_4b29_9cf8_94fb48557fc3_Output_Variables_query_var = Array<user_table__c>
+type user_table__c = {|
+  id__c?: Number {"typeId": "id__c"}, 
+  Name?: String {"typeId": "Name"}, 
+  Password__c?: String {"typeId": "Password__c"}
+|} {"label": "user_table",
+"typeId": "user_table__c"}
+
+
+

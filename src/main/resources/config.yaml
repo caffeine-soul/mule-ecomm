@@ -1,13 +1,20 @@
 salesforce:
-  username: "deepak.g.mundhra@apisero.com"
-  password: "D@eepak95"
-  token: "AOGwTbdO6XiWmTrhDRcHydyt"
-
+  username: "![FOI0OBVdurnUQ0SLdEwqoaC+Pxmv4V/UMqCSScmQBac=]"
+  password: "![A3T7ZF2Ic2FOMjUSWSsERw==]"
+  token: "![POvKzOywSf7q7t41BlS1iuo33MFcO/k0VRnsQMo+S1c=]"
 mysql:
-  hostname: "database-2.cbv0op0onxhv.us-east-1.rds.amazonaws.com"
-  db_name: "ecomm_db"
-  username: "admin"
-  password: "Ecomm.123"
-  port: "3306"
+  hostname: "![mPZJc9kky5jxf4/v567+LSec3Enbl6skEI7wNbB1yjNBlrz7EgKXvZHsBVyfRfrNllLd5WlM0KM=]"
+  db_name: "![IgP3gjbiMqlJtDHc5RlZqw==]"
+  username: "![VhuS5q82Fbc=]"
+  password: "![vhR0DFZQtxUErpERZ13dcA==]"
+  port: "![GsCqbJEvqpI=]"
   
-
+email:
+  hostname: "![8IjPlx0z5MRwa+ChYfE40A==]"
+  port: "![fH+3zFbr5Jo=]"
+  username: "![sfrrBeIPXhsPDOkubalQ0pVhdqGJGxUU]"
+  password: "![av92A2wN54wFY+C9czE/Qg==]"
+  
+aws:
+  access_key: "![40dtn7nIm4v16NWZ2f9irjoal4XDoSkJ]"
+  secret_key: "![j3yRFkoWsXi/WBKPXwe+d24mCsdY1RLe9Afef/oJyf5bmaAjmId0iww1pQeiGMb/]"

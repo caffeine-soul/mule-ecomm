@@ -10,135 +10,7 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
 http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd
 http://www.mulesoft.org/schema/mule/gmail http://www.mulesoft.org/schema/mule/gmail/current/mule-gmail.xsd">
-	<flow name="PostUsers" doc:id="878053cb-2edc-4e5a-a6a3-88f5c37071e2" >
-		<ee:transform doc:name="Transform Message" doc:id="070de2ac-25d5-4b21-a47e-ebf4a016ae20" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
-output application/java
----
-[{
-	full_name__c: payload.full_name,
-	Address__c: payload.address,
-	Password__c: payload.password,
-	contact_number__c: payload.contact_number,
-	id__c: payload.id
-}]]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
-		<salesforce:create doc:name="Create" doc:id="f57d6f72-5880-4754-b572-4453c702599a" config-ref="Salesforce_Config_mule_ecomm" type="user_table__c" target="user_create"/>
-		<ee:transform doc:name="Transform Message" doc:id="acce4647-0d71-468b-ac60-dd967d658cf5" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
-output application/java
----
-{
-	id: "w" ++ (payload[0].id__c as String),
-	user_id: payload[0].id__c,
-	last_modified_at: now() as String {format: "yyyy-MM-dd HH:mm:ss"},
-}]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
-		<db:insert doc:name="Insert" doc:id="21673190-81bb-4f40-a387-587005b0d5db" config-ref="Database_Config">
-			<db:sql ><![CDATA[INSERT INTO wishlist VALUES(:id, :user_id, :last_modified_at);]]></db:sql>
-			<db:input-parameters ><![CDATA[#[payload]]]></db:input-parameters>
-		</db:insert>
-		<ee:transform>
-            <ee:message>
-                <ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-"User Created Successfully!"]]></ee:set-payload>
-            </ee:message>
-        </ee:transform>
-        
-	</flow>
-	<flow name="DeleteUsers" doc:id="3a4ede61-1f94-4b29-9cf8-94fb48557fc3" >
-		<salesforce:query doc:name="Query" doc:id="68f7aa36-7315-48d6-a40e-64e32b47d8de" config-ref="Salesforce_Config_mule_ecomm" target="query_var">
-			<salesforce:salesforce-query ><![CDATA[SELECT Password__c, id__c, Name from user_table__c where id__c = :id]]></salesforce:salesforce-query>
-			<salesforce:parameters ><![CDATA[#[output application/java
----
-{
-	"id" : message.attributes.headers.user_id default 0
-}]]]></salesforce:parameters>
-		</salesforce:query>
-		<choice doc:name="Choice" doc:id="85bd63fb-3f63-4fbf-9ae9-5d6e21d7ceab" >
-			<when expression="#[vars.query_var[0].Password__c == message.attributes.headers.user_password]">
-				<salesforce:delete doc:name="Delete" doc:id="4ad1eff9-25a8-47da-9d6c-61109ba8500b" config-ref="Salesforce_Config_mule_ecomm">
-					<salesforce:ids ><![CDATA[#[[payload[0].Name default " " as String]]]]></salesforce:ids>
-				</salesforce:delete>
-				<logger level="INFO" doc:name="Logger" doc:id="8a3007bf-3acf-471c-b7fa-78b3931bf1a1" message="#[payload.items.exception]"/>
-				<ee:transform>
-            <ee:message>
-                <ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-"User deleted Successfully!"]]></ee:set-payload>
-            </ee:message>
-        </ee:transform>
-			</when>
-			<otherwise >
-				<logger level="INFO" doc:name="Copy_of_Logger" doc:id="3e369753-7377-4a62-9251-2483b80b58f6" message="default" />
-				<ee:transform doc:name="Transform Message" doc:id="ff893d16-81ed-47f4-a48c-773205bc0afd" >
-					<ee:message >
-						<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-"User doesn't exist!"]]></ee:set-payload>
-					</ee:message>
-				</ee:transform>
-			</otherwise>
-		</choice>
 	
-</flow>
-	<flow name="UpdateUsers" doc:id="ce7f0740-2ec9-4a45-8522-4e6634a5513d" initialState="started">
-		<salesforce:query doc:name="Query" doc:id="3a07ccac-6a33-4571-a915-0505653568fe" config-ref="Salesforce_Config_mule_ecomm" target="query_var">
-			<salesforce:salesforce-query><![CDATA[SELECT Password__c, id__c, Name from user_table__c where id__c = :id]]></salesforce:salesforce-query>
-			<salesforce:parameters><![CDATA[#[output application/java
----
-{
-	"id" : message.attributes.headers.user_id default 0
-}]]]></salesforce:parameters>
-		</salesforce:query>
-		<choice doc:name="Choice" doc:id="d39df7c8-b932-49f4-b58b-9edaf3032ca1" >
-			<when expression="#[vars.query_var[0].Password__c == message.attributes.headers.user_password]" >
-				<ee:transform doc:name="Transform Message" doc:id="45d400ec-72a5-4136-ab39-7f5c4d29764b">
-					<ee:message>
-						<ee:set-payload><![CDATA[%dw 2.0
-output application/java
----
-[{
-	Address__c: payload.address,
-	Password__c: payload.password,
-	contact_number__c: payload.contact_number,
-	id: vars.query_var[0].Name
-}]]]></ee:set-payload>
-					</ee:message>
-				</ee:transform>
-				<salesforce:update type="user_table__c" doc:name="Update" doc:id="95b97606-f5e5-4ce2-989a-aa7ca5b41f6d" config-ref="Salesforce_Config_mule_ecomm" >
-				</salesforce:update>
-				<logger level="INFO" doc:name="Logger" doc:id="7b291dcc-5b13-45fa-b683-51e19c040d46" message="#[payload.items.exception]" />
-				<ee:transform doc:name="Transform Message" doc:id="d581a9f9-daaf-411e-a41d-da984019894b" >
-					<ee:message >
-						<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-"User details Updated Successfully!"]]></ee:set-payload>
-					</ee:message>
-				</ee:transform>
-			</when>
-			<otherwise >
-				<logger level="INFO" doc:name="Logger" doc:id="ba622b89-01ee-43ab-83ee-151dae2f8b7c" message="default" />
-				<ee:transform doc:name="Transform Message" doc:id="be6df8e6-3749-4c52-aaec-9878d25f2c61" >
-					<ee:message >
-						<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-"User doesn't exist!"]]></ee:set-payload>
-					</ee:message>
-				</ee:transform>
-			</otherwise>
-		</choice>
-	</flow>
 	<flow name="GetOrders" doc:id="91254911-3b71-4dc8-afe4-583c1bf21a20" >
 				<salesforce:query doc:name="Query" doc:id="a819f251-f944-4fd9-b78b-f71f1b44ab6f" config-ref="Salesforce_Config_mule_ecomm" target="query_var">
 			<salesforce:salesforce-query><![CDATA[SELECT Password__c, id__c, Name from user_table__c where id__c = :id]]></salesforce:salesforce-query>
@@ -156,7 +28,7 @@ output application/json
 		</db:select>
 				<set-variable value="#[[]]" doc:name="complete_payload" doc:id="e82b62a8-d1d8-4790-9a8e-6743a65662b3" variableName="complete_payload"/>
 				<foreach doc:name="For Each" doc:id="f88e8983-4c40-428c-bdbb-54388dba17a2" collection="#[payload]">
-					<db:select doc:name="Select" doc:id="4ec81e6f-bdff-4736-82f3-bd5bde9aa4bf" config-ref="Database_Config" target="items_payload">
+					<db:select doc:name="Select" doc:id="4ec81e6f-bdff-4736-82f3-bd5bde9aa4bf" target="items_payload" config-ref="Database_Config">
 						<db:sql ><![CDATA[SELECT item_id, item_quantity as quantity_ordered FROM order_details WHERE order_id = :id;]]></db:sql>
 						<db:input-parameters ><![CDATA[#[{"id": payload.id}]]]></db:input-parameters>
 					</db:select>
@@ -183,8 +55,11 @@ vars.complete_payload]]></ee:set-payload>
 </when>
 			<otherwise>
 				<logger level="INFO" doc:name="Logger" doc:id="3febed2b-6564-4db2-84f1-ca7998f8aa92" message="#[vars.query_var]"/>
+<raise-error doc:name="Raise error" doc:id="a58c992e-a868-4f03-aba6-a8cd91a9ca65" type="USERS:WRONG_CREDENTIALS"/>
+			
 			</otherwise>
 		</choice>
+		<error-handler ref="globalError_Handler" />
 	</flow>
 
 	<flow name="PutOrders" doc:id="8f3c353e-35e2-4fc3-bce8-538f4d373137" >
@@ -197,8 +72,8 @@ vars.complete_payload]]></ee:set-payload>
 }]]]></salesforce:parameters>
 		</salesforce:query>
 				<choice doc:name="Choice" doc:id="38af9b77-bbd6-456a-b89e-8ebde0f35428" >
-			<when expression="#[vars.query_var[0].Password__c == message.attributes.headers.user_password]">
-				<db:select doc:name="Select" doc:id="5772e6e6-3910-448a-a9b0-564d7c1f747b" config-ref="Database_Config" target="select_info">
+			<when expression="#[vars.query_var[0].Password__c == message.attributes.headers.user_password and sizeOf(vars.query_var) &gt; 0]">
+				<db:select doc:name="Select" doc:id="5772e6e6-3910-448a-a9b0-564d7c1f747b" target="select_info" config-ref="Database_Config">
 					<db:sql ><![CDATA[SELECT address, delivery_date FROM orders where id= :id;]]></db:sql>
 					<db:input-parameters ><![CDATA[#[{"id": message.attributes.headers.order_id}]]]></db:input-parameters>
 				</db:select>
@@ -237,9 +112,12 @@ else{
 				<ee:transform doc:name="Transform Message" doc:id="703d2d27-594b-4be0-831e-9c7a6dcc7c96" >
 					<ee:message >
 						<ee:set-payload ><![CDATA[%dw 2.0
-output application/java
+output application/json
 ---
-"Order details Updated Successfully!"
+{
+	"message": "Order details Updated Successfully!"
+}
+
 ]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
@@ -248,9 +126,12 @@ output application/java
 
 </when>
 			<otherwise>
-				<logger level="INFO" doc:name="Logger" doc:id="8337f365-e503-48f3-88ad-8f891d8e90d9" message="#[vars.query_var]"/>
+				<logger level="INFO" doc:name="Logger" doc:id="8337f365-e503-48f3-88ad-8f891d8e90d9" message='In "Put orders" flow'/>
+<raise-error doc:name="Raise error" doc:id="c6b30531-0bee-49cd-a5a8-1453f1abab86" type="USERS:WRONG_CREDENTIALS"/>
+			
 			</otherwise>
 		</choice>
+		<error-handler ref="globalError_Handler" />
 	</flow>
 	<flow name="PostOrders" doc:id="9be8fed6-0040-45ca-bf5d-c771a43f9568" initialState="started">
 		<salesforce:query doc:name="Query" doc:id="3efba4f9-9db0-4f78-b583-2134aebf1b87" config-ref="Salesforce_Config_mule_ecomm" target="query_var">
@@ -263,13 +144,8 @@ output application/java
 		</salesforce:query>
 		<choice doc:name="Choice" doc:id="b06958e1-9782-440f-8f5d-1fc29b6c992b" >
 			<when expression="#[vars.query_var[0].Password__c == message.attributes.headers.user_password]" >
-				<os:retrieve doc:name="RetrieveOrderID" doc:id="85ba631f-a40b-498c-a359-f900bb57550e" key="order_id" objectStore="Object_store" target="order_id">
-					<os:default-value ><![CDATA[#[1]]]></os:default-value>
-				</os:retrieve>
-				<os:store doc:name="OrderID" doc:id="a3446a4d-a0f9-476f-9310-744f319d31a4" key="order_id" objectStore="Object_store">
-					<os:value ><![CDATA[#[vars.order_id + 1]]]></os:value>
-				</os:store>
-			        <flow-ref doc:name="fetch_total_price" doc:id="52df60ab-7274-4557-a16e-e35508ab8c48" name="fetch_total_price" target="total_price"/>
+			        <flow-ref doc:name="retrieve_order_id" doc:id="623acd73-d690-4fe2-ad58-7ba1f9b62a2c" name="retrieve_order_id"/>
+				<flow-ref doc:name="fetch_total_price" doc:id="52df60ab-7274-4557-a16e-e35508ab8c48" name="fetch_total_price" target="total_price"/>
 				<flow-ref doc:name="update_inventory" doc:id="5a09ae22-5047-4d09-964b-a2412500413e" name="update_inventory" target="update_inventory" />
 				<flow-ref doc:name="insert_in_orders" doc:id="15fa206c-ea9b-4d42-9da1-5cbe46be3e08" name="insert_in_orders" target="orders_output"/>
 				<flow-ref doc:name="insert_in_order_details" doc:id="5d4c7139-2eb0-4886-9483-855cbfbc06a4" name="insert_in_order_details" target="order_details_output"/>
@@ -278,16 +154,30 @@ output application/java
                 <ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
-"Order with ID "++ vars.order_id as String ++" Created Successfully!"]]></ee:set-payload>
+{
+	"message": "Order with ID "++ vars.order_id as String ++" Created Successfully!"
+}
+]]></ee:set-payload>
             </ee:message>
         </ee:transform>
 			
 </when>
 			<otherwise>
-				<logger level="INFO" doc:name="Logger" doc:id="75ecd94b-c2e8-45e2-a0a9-ff23fb4aea25" message="#[vars.query_var]"/>
+				<logger level="INFO" doc:name="Logger" doc:id="75ecd94b-c2e8-45e2-a0a9-ff23fb4aea25" message="PostOders Flow: Default case in choice"/>
+<raise-error doc:name="Raise error" doc:id="8c570762-4157-46c2-b2c0-d1151edf2270" type="USERS:WRONG_CREDENTIALS"/>
+			
 			</otherwise>
 		</choice>
+		<error-handler ref="globalError_Handler" />
 	</flow>
+	<sub-flow name="retrieve_order_id" doc:id="ab372933-f05d-42b6-a6a8-fd4f499f1153" >
+		<os:retrieve doc:name="RetrieveOrderID" doc:id="85ba631f-a40b-498c-a359-f900bb57550e" key="order_id" objectStore="Object_store" target="order_id">
+					<os:default-value><![CDATA[#[1]]]></os:default-value>
+				</os:retrieve>
+		<os:store doc:name="OrderID" doc:id="a3446a4d-a0f9-476f-9310-744f319d31a4" key="order_id" objectStore="Object_store">
+					<os:value><![CDATA[#[vars.order_id + 1]]]></os:value>
+				</os:store>
+	</sub-flow>
 	<sub-flow name="insert_in_orders" doc:id="0d9a93e1-467d-4c8b-ae15-7e1486234b37">
 		<ee:transform doc:name="Transform Message" doc:id="8f6ebcdc-c65c-400b-af73-7ffd0476e7ad">
 			<ee:message>
@@ -345,7 +235,7 @@ payload.items map(val, index) -> {
 					<set-variable value='#[vars.order_amount + ( payload[0]."price" as Number default 0)]' doc:name="add price" doc:id="69bf0669-3332-4e68-945f-8b1c7696b8e3" variableName="order_amount" />
 				</when>
 				<otherwise >
-					<raise-error doc:name="Raise error" doc:id="939ffb42-050b-446f-bc3b-c700c660612c" type="ORDERS: OUT_OF_STOCK" description='#["Item with id " ++ vars.item_id  ++  " currently out of stock! Order can not be placed!"]'/>
+					<raise-error doc:name="Raise error" doc:id="939ffb42-050b-446f-bc3b-c700c660612c" type="ORDERS:OUT_OF_STOCK" description='#["Item with id " ++ vars.item_id  ++  " currently out of stock! Order can not be placed!"]'/>
 				</otherwise>
 			</choice>
 		</foreach>
@@ -359,84 +249,4 @@ payload.items map(val, index) -> {
 			</db:update>
 		</foreach>
 	</sub-flow>
-	<flow name="emailFlow" doc:id="ca0ed068-43e3-4065-a95f-f8ec85595b3f" >
-		<db:listener table="inventory_update_metadata" doc:name="On Table Row" doc:id="a2c2e271-457b-4287-9a5a-703ff5a86912" config-ref="Database_Config" watermarkColumn="last_updated_at">
-			<scheduling-strategy >
-				<fixed-frequency frequency="5" timeUnit="SECONDS" />
-			</scheduling-strategy>
-		</db:listener>
-		<set-variable value="#[true]" doc:name="flag" doc:id="69c7c976-a612-469a-a190-35b2ad9053c6" variableName="flag"/>
-		<choice doc:name="Choice" doc:id="50e47a3c-9453-4f28-b446-7f3fa078b0f7" >
-						<when expression="#[sizeOf(payload) == 0]">
-				<set-variable value="#[false]" doc:name="flag to False" doc:id="83ea9915-9f57-44f2-a215-afad71e1541f" variableName="flag"/>
-				<logger level="INFO" doc:name="Logger" doc:id="33e2ea42-b459-4849-a5d6-344c640b8475" />
-			
-</when>
-			<when expression="#[(payload.current_in_stock_quantity !=0 and payload.previous_in_stock_quantity==0)]">
-				<set-variable value='#["Item with ID " ++ (payload.item_id default 1 as String) ++ " is now back in stock!"]' doc:name="email_body" doc:id="79603edd-1c08-4709-952f-3eabea33bbe7" variableName="email_body"/>
-			</when>
-			<when expression="#[(payload.current_in_stock_quantity ==0 and payload.previous_in_stock_quantity !=0)]">
-				<set-variable value='#["Item with ID " ++ (payload.item_id default 1 as String) ++ " is out of stock!"]' doc:name="email_body" doc:id="59b9e1b6-aa1a-4465-9238-df49678d6960" variableName="email_body"/>
-			</when>
-			<when expression="#[payload.item_current_price &lt; payload.item_previous_price]">
-				<set-variable value='#["Item with ID " ++ (payload.item_id default 1 as String) ++ " is now available at a discounted price"]' doc:name="email_body" doc:id="86a4d21b-9d66-4537-ab84-2ae31dc5abe6" variableName="email_body"/>
-			</when>
-
-			<otherwise >
-				<set-variable value='#["Item with ID " ++ (payload.item_id default 1 as String) ++ " price has now increased!"]' doc:name="email_body" doc:id="0a8fb0df-6684-4f88-9fdb-d303be5e8d87" variableName="email_body"/>
-			</otherwise>
-		</choice>
-		
-		
-		<choice doc:name="Choice" doc:id="75fe5451-f06b-498c-8536-6153aa505972" >
-			<when expression="#[vars.flag]">
-				<set-variable value="#[payload.item_id]" doc:name="item_id" doc:id="05d0c46d-97c6-4294-ad30-5189c87635a6" variableName="item_id" />
-				<db:select doc:name="Select" doc:id="848ec2c2-2d00-42ad-99d8-2d82ca45c987" config-ref="Database_Config">
-			<db:sql><![CDATA[SELECT DISTINCT(wishlist_id) as wishlist_id FROM wishlist_details WHERE item_id=:id]]></db:sql>
-			<db:input-parameters><![CDATA[#[{"id": payload.item_id}]]]></db:input-parameters>
-		</db:select>
-				<choice doc:name="Choice" doc:id="c52a0b78-f79b-4ce9-be2f-08842c618f95">
-					<when expression="#[sizeOf(payload) != 0]">
-						<logger level="INFO" doc:name="Logger" doc:id="9263cb5c-ba4c-49b1-83df-a4b14dbad0aa" message="#[payload]" />
-						<foreach doc:name="For Each" doc:id="88573184-0257-43a0-88cd-0eb9da944e44" collection="#[payload]">
-			<db:select doc:name="Select" doc:id="62aac7eb-56da-43f9-8bd0-faa9c793a36e" config-ref="Database_Config">
-				<db:sql><![CDATA[SELECT DISTINCT(user_id) as user_id FROM wishlist WHERE id=:id]]></db:sql>
-				<db:input-parameters><![CDATA[#[{"id": payload.wishlist_id}]]]></db:input-parameters>
-			</db:select>
-			<logger level="INFO" doc:name="Logger" doc:id="37f02539-c3fd-452c-ab42-2d08048a72ef" />
-			<foreach doc:name="For Each" doc:id="dff0d996-311c-4288-b8fd-dbad5dbae935" collection="#[payload]">
-				<ee:transform doc:name="Transform Message" doc:id="78b27a23-2771-4f38-a875-bab8670ff46d" >
-									<ee:message >
-										<ee:set-payload ><![CDATA[%dw 2.0
-output application/java
----
-[{
-	"Address__c": "krishna03maheshwari@gmail.com" as String,
-	"full_name__c": "Krishna" as String
-}]]]></ee:set-payload>
-									</ee:message>
-								</ee:transform>
-								<email:send doc:name="Send" doc:id="313647d3-1476-4721-8107-bcc8d470256d" config-ref="Email_SMTP" fromAddress='#["cu.16bc1798@gmail.com"]' subject="MuleEcom- Wishlist Alert!">
-					<email:to-addresses>
-						<email:to-address value="#[payload[0].Address__c]" />
-					</email:to-addresses>
-					<email:body contentType="text/plain" encoding="UTF-8">
-						<email:content><![CDATA[#["Hi " ++ payload[0].full_name__c default "" as String ++ ",\n\n" ++ vars.email_body]]]></email:content>
-					</email:body>
-				</email:send>
-				<logger level="INFO" doc:name="Logger" doc:id="b43575e0-ea97-45a0-b4f2-d4bffca657b3" message="#[payload]" />
-			</foreach>
-		</foreach>
-						<logger level="INFO" doc:name="Logger" doc:id="8e9f2bbc-1e30-4bb2-867c-fead3133fee3" message="#[payload]" />
-					</when>
-					<otherwise >
-						<logger level="INFO" doc:name="Logger" doc:id="632f04c0-2d3e-4086-adf1-37c3de05f9cb" message="Item not present in any wishlist!"/>
-					</otherwise>
-				</choice>
-			</when>
-			<otherwise >
-				<logger level="INFO" doc:name="Logger" doc:id="4ff1a497-08f5-4a1f-9c18-32ec355a366a" message="No modification detected in the inventory!"/>
-			</otherwise>
-		</choice>
-	</flow>
 </mule>

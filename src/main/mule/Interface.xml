@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd ">
+    <http:listener-config name="mule-ecommerce-project-httpListenerConfig">
+        <http:listener-connection host="0.0.0.0" port="8081" />
+    </http:listener-config>
+    <apikit:config name="mule-ecommerce-project-config" api="resource::3cb354e5-9e67-42b4-8c36-6448f00baecc:mule-ecommerce-project:1.0.4:raml:zip:mule-ecommerce-project.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <flow name="mule-ecommerce-project-main">
+        <http:listener config-ref="mule-ecommerce-project-httpListenerConfig" path="/api/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:router config-ref="mule-ecommerce-project-config" />
+        <error-handler ref="globalError_Handler">
+
+        </error-handler>
+    </flow>
+    <flow name="mule-ecommerce-project-console">
+        <http:listener config-ref="mule-ecommerce-project-httpListenerConfig" path="/console/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:console config-ref="mule-ecommerce-project-config" />
+        <error-handler ref="globalError_Handler">
+        </error-handler>
+    </flow>
+    <flow name="post:\users:application\json:mule-ecommerce-project-config">
+        <flow-ref doc:name="PostUsers" doc:id="9cf2b4af-1137-451a-8123-2fef9eaace8a" name="PostUsers" />
+    </flow>
+    <flow name="put:\users:application\json:mule-ecommerce-project-config">
+        <flow-ref doc:name="updateUsers" doc:id="8ba6e490-93ca-4e70-af1d-a4bae7294d76" name="UpdateUsers" />
+    </flow>
+    <flow name="delete:\users:mule-ecommerce-project-config">
+        <flow-ref doc:name="DeleteUsers" doc:id="4a768de0-af92-4999-ae77-a937535557c4" name="DeleteUsers" />
+    </flow>
+    <flow name="post:\orders:application\json:mule-ecommerce-project-config">
+        <flow-ref doc:name="PostOrders" doc:id="8f202b7c-eb0e-4727-935d-fe01deaa422f" name="PostOrders" />
+    </flow>
+    <flow name="put:\orders:application\json:mule-ecommerce-project-config">
+        <flow-ref doc:name="PutOrders" doc:id="53aee504-eaa9-4b4d-b301-347183d481b5" name="PutOrders" />
+    </flow>
+    <flow name="get:\orders:mule-ecommerce-project-config">
+        <flow-ref doc:name="GetOrders" doc:id="6c3a51a6-9bfd-492c-be86-b1ca873f4b77" name="GetOrders" />
+    </flow>
+</mule>

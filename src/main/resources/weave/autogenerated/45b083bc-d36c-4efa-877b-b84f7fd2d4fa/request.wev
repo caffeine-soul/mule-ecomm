@@ -1,0 +1,8 @@
+%dw 2.0
+
+type auto_45b083bc_d36c_4efa_877b_b84f7fd2d4fa_Output_Variables_job_request = {|
+  externalIdFieldName: String, 
+  contentType: String, 
+  concurrencyMode: String
+|}
+
