@@ -73,7 +73,7 @@
 					<coverage>
 						<runCoverage>true</runCoverage>
 						<failBuild>true</failBuild>
-						<requiredApplicationCoverage>70</requiredApplicationCoverage>
+						<requiredApplicationCoverage>75</requiredApplicationCoverage>
 						<ignoreFlows>
 							<ignoreFlow> retrieve_order_id </ignoreFlow>
 						</ignoreFlows>
