@@ -7,7 +7,7 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
     <http:request-config name="HTTP_Request_Configuration_munit" basePath="/api">
         <http:request-connection host="localhost" port="8081" />
     </http:request-config>
-    <munit:test name="users-put-positive-test" description="Verifying functionality of [put:\users:application\json:mule-ecommerce-project-config-200-application\json]" ignore="true">
+    <munit:test name="users-put-positive-test" description="Verifying functionality of [put:\users:application\json:mule-ecommerce-project-config-200-application\json]">
         <munit:enable-flow-sources>
             <munit:enable-flow-source value="mule-ecommerce-project-main" />
             <munit:enable-flow-source value="put:\users:application\json:mule-ecommerce-project-config" />
@@ -35,7 +35,7 @@ output application/json
         </munit:validation>
     </munit:test>
 	
-	    <munit:test name="users-put-negative-test" description="Verifying functionality of [put:\users:application\json:mule-ecommerce-project-config-200-application\json]" expectedErrorType="ANY" ignore="true">
+	    <munit:test name="users-put-negative-test" description="Verifying functionality of [put:\users:application\json:mule-ecommerce-project-config-200-application\json]" expectedErrorType="ANY">
         <munit:enable-flow-sources>
             <munit:enable-flow-source value="mule-ecommerce-project-main" />
             <munit:enable-flow-source value="put:\users:application\json:mule-ecommerce-project-config" />
@@ -58,7 +58,7 @@ output application/json
     </munit:test>
 	
 	
-	<munit:test name="users-del-positive-test" description="Verifying functionality of [delete:\users:mule-ecommerce-project-config-200-application\json]" ignore="true">
+	<munit:test name="users-del-positive-test" description="Verifying functionality of [delete:\users:mule-ecommerce-project-config-200-application\json]">
         <munit:enable-flow-sources>
             <munit:enable-flow-source value="mule-ecommerce-project-main" />
             <munit:enable-flow-source value="delete:\users:mule-ecommerce-project-config" />
@@ -75,7 +75,7 @@ output application/json
         </munit:validation>
     </munit:test>
 
-		<munit:test name="users-del-negative-test" description="Verifying functionality of [delete:\users:mule-ecommerce-project-config-200-application\json]" expectedErrorType="ANY" ignore="true">
+		<munit:test name="users-del-negative-test" description="Verifying functionality of [delete:\users:mule-ecommerce-project-config-200-application\json]" expectedErrorType="ANY">
         <munit:enable-flow-sources>
             <munit:enable-flow-source value="mule-ecommerce-project-main" />
             <munit:enable-flow-source value="delete:\users:mule-ecommerce-project-config" />
@@ -88,7 +88,7 @@ output application/json
     </munit:test>
 	
 	
-	<munit:test name="users-post-positive-test" description="Verifying functionality of [post:\users:application\json:mule-ecommerce-project-config-201-application\json]" ignore="true">
+	<munit:test name="users-post-positive-test" description="Verifying functionality of [post:\users:application\json:mule-ecommerce-project-config-201-application\json]">
         <munit:enable-flow-sources>
             <munit:enable-flow-source value="mule-ecommerce-project-main" />
             <munit:enable-flow-source value="post:\users:application\json:mule-ecommerce-project-config" />
@@ -107,7 +107,7 @@ output application/json
             <munit-tools:assert-that expression="#[payload.message]" is='#[MunitTools::equalTo("User Created Successfully!")]' message="The response payload is not correct!" doc:name="Assert That - Payload is Expected" />
         </munit:validation>
     </munit:test>
-	<munit:test name="users-post-negative-test" description="Verifying functionality of [post:\users:application\json:mule-ecommerce-project-config-201-application\json]" expectedErrorType="USER:DUPLICATE_USER" ignore="true">
+	<munit:test name="users-post-negative-test" description="Verifying functionality of [post:\users:application\json:mule-ecommerce-project-config-201-application\json]" expectedErrorType="USER:DUPLICATE_USER">
         <munit:enable-flow-sources>
             <munit:enable-flow-source value="mule-ecommerce-project-main" />
             <munit:enable-flow-source value="post:\users:application\json:mule-ecommerce-project-config" />
@@ -158,7 +158,7 @@ output application/json
     </munit:test>
 	
 	
-	<munit:test name="orders-post-positive-test" description="Verifying functionality of [post:\orders:application\json:mule-ecommerce-project-config-201-application\json]" ignore="true">
+	<munit:test name="orders-post-positive-test" description="Verifying functionality of [post:\orders:application\json:mule-ecommerce-project-config-201-application\json]">
         <munit:enable-flow-sources>
             <munit:enable-flow-source value="mule-ecommerce-project-main" />
             <munit:enable-flow-source value="post:\orders:application\json:mule-ecommerce-project-config" />
@@ -209,7 +209,7 @@ output application/json
         </munit:validation>
     </munit:test>
 	
-		<munit:test name="orders-post-negative-test" description="Verifying functionality of [post:\orders:application\json:mule-ecommerce-project-config-201-application\json]" expectedErrorType="ANY" ignore="true">
+		<munit:test name="orders-post-negative-test" description="Verifying functionality of [post:\orders:application\json:mule-ecommerce-project-config-201-application\json]" expectedErrorType="ANY">
         <munit:enable-flow-sources>
             <munit:enable-flow-source value="mule-ecommerce-project-main" />
             <munit:enable-flow-source value="post:\orders:application\json:mule-ecommerce-project-config" />
@@ -240,7 +240,7 @@ output application/json
 	
 	
 	
-	<munit:test name="orders-post-negative-no-item-test" description="Verifying functionality of [post:\orders:application\json:mule-ecommerce-project-config-201-application\json]" expectedErrorType="HTTP:NOT_FOUND" ignore="true">
+	<munit:test name="orders-post-negative-no-item-test" description="Verifying functionality of [post:\orders:application\json:mule-ecommerce-project-config-201-application\json]" expectedErrorType="HTTP:NOT_FOUND">
         <munit:enable-flow-sources>
             <munit:enable-flow-source value="mule-ecommerce-project-main" />
             <munit:enable-flow-source value="post:\orders:application\json:mule-ecommerce-project-config" />
@@ -294,7 +294,7 @@ output application/json
     </munit:test>
 	
 	
-	<munit:test name="orders-put-positive-test" description="Verifying functionality of [put:\orders:application\json:mule-ecommerce-project-config-200-application\json]" ignore="true">
+	<munit:test name="orders-put-positive-test" description="Verifying functionality of [put:\orders:application\json:mule-ecommerce-project-config-200-application\json]">
         <munit:enable-flow-sources>
             <munit:enable-flow-source value="mule-ecommerce-project-main" />
             <munit:enable-flow-source value="put:\orders:application\json:mule-ecommerce-project-config" />
@@ -327,7 +327,7 @@ output application/json
         </munit:validation>
     </munit:test>
     
-    	<munit:test name="orders-put-negative-test" description="Verifying functionality of [put:\orders:application\json:mule-ecommerce-project-config-200-application\json]" expectedErrorType="ANY" ignore="true">
+    	<munit:test name="orders-put-negative-test" description="Verifying functionality of [put:\orders:application\json:mule-ecommerce-project-config-200-application\json]" expectedErrorType="ANY">
         <munit:enable-flow-sources>
             <munit:enable-flow-source value="mule-ecommerce-project-main" />
             <munit:enable-flow-source value="put:\orders:application\json:mule-ecommerce-project-config" />
@@ -350,7 +350,7 @@ output application/json
         </munit:execution>
     </munit:test>
     
-    <munit:test name="orders-get-positive-test" description="Verifying functionality of [get:\orders:mule-ecommerce-project-config-200-application\json]" ignore="true">
+    <munit:test name="orders-get-positive-test" description="Verifying functionality of [get:\orders:mule-ecommerce-project-config-200-application\json]">
         <munit:enable-flow-sources>
             <munit:enable-flow-source value="mule-ecommerce-project-main" />
             <munit:enable-flow-source value="get:\orders:mule-ecommerce-project-config" />
@@ -372,7 +372,7 @@ output application/json
         </munit:validation>
     </munit:test>
     
-        <munit:test name="orders-get-negative-test" description="Verifying functionality of [get:\orders:mule-ecommerce-project-config-200-application\json]" expectedErrorType="ANY" ignore="true">
+        <munit:test name="orders-get-negative-test" description="Verifying functionality of [get:\orders:mule-ecommerce-project-config-200-application\json]" expectedErrorType="ANY">
         <munit:enable-flow-sources>
             <munit:enable-flow-source value="mule-ecommerce-project-main" />
             <munit:enable-flow-source value="get:\orders:mule-ecommerce-project-config" />
@@ -412,7 +412,7 @@ output application/json
 			<munit-tools:assert-equals doc:name="Assert equals" doc:id="e6a6164c-234c-4ad7-9c83-f455d07deebe" actual="#[payload.message]" expected='#["email sent successfully"]'/>
 		</munit:validation>
 	</munit:test>
-		<munit:test name="email-increased-price-test" doc:id="6572d26a-2e69-4cfe-bf75-79d213a668a2" description="Test" ignore="true">
+		<munit:test name="email-increased-price-test" doc:id="6572d26a-2e69-4cfe-bf75-79d213a668a2" description="Test">
 		<munit:execution >
 			<flow-ref doc:name="createUser" doc:id="aaaf43a5-a330-4794-85aa-1b48efb868c8" name="createUser" target="usr"/>
 			<flow-ref doc:name="insert_in_inventory" doc:id="99893a44-00df-4f06-8c43-4cbe9c2ea244" name="insert_in_inventory" target="inv"/>
@@ -440,7 +440,7 @@ output application/json
 			<munit-tools:assert-equals doc:name="Assert equals" doc:id="9728c813-5255-4963-96e1-b6d3a08f8b61" actual="#[payload.message]" expected='#["email sent successfully"]'/>
 		</munit:validation>
 	</munit:test>
-		<munit:test name="email-out_of_stock-test" doc:id="6f77650d-49f8-4955-b598-fc8a6ae662b1" description="Test" ignore="true">
+		<munit:test name="email-out_of_stock-test" doc:id="6f77650d-49f8-4955-b598-fc8a6ae662b1" description="Test">
 		<munit:execution >
 			<flow-ref doc:name="createUser" doc:id="3a690cf0-bd7d-4395-b4b7-05f41f9ac49d" name="createUser" target="usr"/>
 			<flow-ref doc:name="insert_in_inventory" doc:id="4c4f854b-4e04-439b-b97f-29e85741fc8d" name="insert_in_inventory" target="inv"/>
@@ -468,7 +468,7 @@ output application/json
 			<munit-tools:assert-equals doc:name="Assert equals" doc:id="473ba371-f5f5-4e79-9e04-fba22a8145ce" actual="#[payload.message]" expected='#["email sent successfully"]'/>
 		</munit:validation>
 	</munit:test>
-		<munit:test name="email-in_stock-test" doc:id="de0a0dd3-8433-493e-b9d0-62e12ceba4cd" description="Test" ignore="true">
+		<munit:test name="email-in_stock-test" doc:id="de0a0dd3-8433-493e-b9d0-62e12ceba4cd" description="Test">
 		<munit:execution >
 			<flow-ref doc:name="createUser" doc:id="b371b3cf-9012-408f-81db-51e4380e274c" name="createUser" target="usr"/>
 			<flow-ref doc:name="insert_in_inventory" doc:id="c7bd3412-8e45-4a6a-aa1d-2ce761c5684e" name="insert_in_inventory" target="inv"/>
@@ -497,7 +497,7 @@ output application/json
 		</munit:validation>
 	</munit:test>
 	
-	<munit:test name="email-empty-payload-test" doc:id="4961584a-1311-4a93-8800-a57521b9c4ef" ignore="true">
+	<munit:test name="email-empty-payload-test" doc:id="4961584a-1311-4a93-8800-a57521b9c4ef">
 		<munit:execution >
 			<set-payload value="#[{}]" doc:name="Set Payload" doc:id="c2f22584-b999-4c68-9ce9-c617fe67baf9" />
 			<flow-ref doc:name="Flow Reference" doc:id="bf02c10a-bb15-4498-a8d2-eeeaeb5efaf3" name="emailAlertFlow"/>
@@ -507,7 +507,7 @@ output application/json
 		</munit:validation>
 	</munit:test>
 	
-	    <munit:test name="BAD_REQUEST-Test" doc:id="18db6061-e1d0-4cb7-9687-c2263e7dc188" description="Test" expectedErrorType="APIKIT:BAD_REQUEST" ignore="true">
+	    <munit:test name="BAD_REQUEST-Test" doc:id="18db6061-e1d0-4cb7-9687-c2263e7dc188" description="Test" expectedErrorType="APIKIT:BAD_REQUEST">
         <munit:behavior >
             <munit-tools:mock-when doc:name="Mock when APIKIT:BAD_REQUEST" doc:id="668d1bfd-8dbe-4c13-9780-3624fcd08eb4" processor="apikit:router">
                 <munit-tools:with-attributes >
@@ -525,7 +525,7 @@ output application/json
             <munit-tools:assert-equals doc:name="Assert equals" doc:id="4d90ae2d-bd6e-4b29-ac57-1d41c09f7a3a" actual="#[vars.httpStatus]" expected="#[400]"/>
         </munit:validation>
     </munit:test>
-    <munit:test name="NOT_FOUND-Test" doc:id="768d70f9-25b8-48fb-91f4-73e5be79e529" description="Test" expectedErrorType="APIKIT:NOT_FOUND" ignore="true">
+    <munit:test name="NOT_FOUND-Test" doc:id="768d70f9-25b8-48fb-91f4-73e5be79e529" description="Test" expectedErrorType="APIKIT:NOT_FOUND">
         <munit:behavior >
             <munit-tools:mock-when doc:name="Mock when APIKIT:NOT_FOUND" doc:id="fd638120-74be-4b71-872a-4c01090ebc5e" processor="apikit:router">
                 <munit-tools:with-attributes >
@@ -543,7 +543,7 @@ output application/json
             <munit-tools:assert-equals doc:name="Assert equals" doc:id="f74f748f-c898-4b9e-bee5-1dd2d23b4d0b" actual="#[vars.httpStatus]" expected="#[404]"/>
         </munit:validation>
     </munit:test>
-    <munit:test name="METHOD_NOT_ALLOWED-Test" doc:id="8d2c0404-4e97-4890-b95b-fea62d1d3212" description="Test" expectedErrorType="APIKIT:METHOD_NOT_ALLOWED" ignore="true">
+    <munit:test name="METHOD_NOT_ALLOWED-Test" doc:id="8d2c0404-4e97-4890-b95b-fea62d1d3212" description="Test" expectedErrorType="APIKIT:METHOD_NOT_ALLOWED">
         <munit:behavior >
             <munit-tools:mock-when doc:name="Mock when APIKIT:METHOD_NOT_ALLOWED" doc:id="798b1d6b-0342-47bb-a846-cf244e0d9df1" processor="apikit:router">
                 <munit-tools:with-attributes >
@@ -561,7 +561,7 @@ output application/json
             <munit-tools:assert-equals doc:name="Assert equals" doc:id="57d75f44-d052-421c-a92f-727c1f13ee92" actual="#[vars.httpStatus]" expected="#[405]"/>
         </munit:validation>
     </munit:test>
-    <munit:test name="NOT_ACCEPTABLE-Test" doc:id="02c0e65d-9bd0-41a8-817f-1aa9aa96ea48" description="Test" expectedErrorType="APIKIT:NOT_ACCEPTABLE" ignore="true">
+    <munit:test name="NOT_ACCEPTABLE-Test" doc:id="02c0e65d-9bd0-41a8-817f-1aa9aa96ea48" description="Test" expectedErrorType="APIKIT:NOT_ACCEPTABLE">
         <munit:behavior >
             <munit-tools:mock-when doc:name="Mock when APIKIT:NOT_ACCEPTABLE" doc:id="9f8f77f2-c394-451b-9e1a-a70ba1fadfde" processor="apikit:router">
                 <munit-tools:with-attributes >
@@ -579,7 +579,7 @@ output application/json
             <munit-tools:assert-equals doc:name="Assert equals" doc:id="baf49616-404f-4940-b2cd-563037bc5e61" actual="#[vars.httpStatus]" expected="#[406]"/>
         </munit:validation>
     </munit:test>
-    <munit:test name="UNSUPPORTED_MEDIA_TYPE-Test" doc:id="4cf98be9-33b1-4b49-a5e8-404dde6cb486" description="Test" expectedErrorType="APIKIT:UNSUPPORTED_MEDIA_TYPE" ignore="true">
+    <munit:test name="UNSUPPORTED_MEDIA_TYPE-Test" doc:id="4cf98be9-33b1-4b49-a5e8-404dde6cb486" description="Test" expectedErrorType="APIKIT:UNSUPPORTED_MEDIA_TYPE">
         <munit:behavior >
             <munit-tools:mock-when doc:name="Mock when APIKIT:UNSUPPORTED_MEDIA_TYPE" doc:id="60747c2f-5460-4a6a-a83a-ba0aba7bab70" processor="apikit:router">
                 <munit-tools:with-attributes >
@@ -597,7 +597,7 @@ output application/json
             <munit-tools:assert-equals doc:name="Assert equals" doc:id="657b3675-cba4-4d32-90bb-2982d78c3b06" actual="#[vars.httpStatus]" expected="#[415]"/>
         </munit:validation>
     </munit:test>
-    <munit:test name="NOT_IMPLEMENTED-Test" doc:id="530a5bc1-958c-4a12-b0a4-802d9477f6f3" description="Test" expectedErrorType="APIKIT:NOT_IMPLEMENTED" ignore="true">
+    <munit:test name="NOT_IMPLEMENTED-Test" doc:id="530a5bc1-958c-4a12-b0a4-802d9477f6f3" description="Test" expectedErrorType="APIKIT:NOT_IMPLEMENTED">
         <munit:behavior >
             <munit-tools:mock-when doc:name="Mock when APIKIT:NOT_IMPLEMENTED" doc:id="d8bb930c-3074-4edc-88a9-c42ac6bf1157" processor="apikit:router">
                 <munit-tools:with-attributes >
