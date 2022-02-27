@@ -14,3 +14,7 @@ email:
   port: "![fH+3zFbr5Jo=]"
   username: "![sfrrBeIPXhsPDOkubalQ0pVhdqGJGxUU]"
   password: "![av92A2wN54wFY+C9czE/Qg==]"
+  
+aws:
+  access_key: "![40dtn7nIm4v16NWZ2f9irjoal4XDoSkJ]"
+  secret_key: "![j3yRFkoWsXi/WBKPXwe+d24mCsdY1RLe9Afef/oJyf5bmaAjmId0iww1pQeiGMb/]"

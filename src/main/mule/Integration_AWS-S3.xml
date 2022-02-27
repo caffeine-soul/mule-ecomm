@@ -10,7 +10,7 @@ http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/cu
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
 http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
 	<s3:config name="Amazon_S3_Configuration" doc:name="Amazon S3 Configuration" doc:id="4af9ad3a-bca5-4243-bcb6-9e6515a5d6f6" >
-		<s3:basic-connection accessKey="AKIATUUGLHAHNSXTYFPV" secretKey="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" />
+		<s3:basic-connection accessKey="${secure::aws.access_key}" secretKey="${secure::aws.secret_key}" />
 	</s3:config>
 	<flow name="integration_scheduler" doc:id="0dab3529-058e-4b82-884b-e0e79db4d4db" >
 		<scheduler doc:name="Scheduler" doc:id="85b120e9-003d-4fb3-87dd-1853cb19808b">
