@@ -1,0 +1,5 @@
+%dw 2.0
+
+type auto_45b083bc_d36c_4efa_877b_b84f7fd2d4fa_Output_Variables_acc_last_read = {|  |} {"typeAlias": "Serializable",
+"typeId": "java.io.Serializable"}
+

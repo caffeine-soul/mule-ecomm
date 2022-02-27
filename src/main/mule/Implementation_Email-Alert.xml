@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:email="http://www.mulesoft.org/schema/mule/email"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd 
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd 
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
+	
+		<flow name="emailAlertFlow" doc:id="7b0b2ad7-dd25-4f66-b4f1-326669e96e77" >
+		<db:listener table="inventory_update_metadata" doc:name="On Table Row" doc:id="882152a7-99b4-4655-a21b-172f59d975f5" watermarkColumn="last_updated_at" config-ref="Database_Config">
+			<scheduling-strategy >
+				<fixed-frequency frequency="5" timeUnit="SECONDS" />
+			</scheduling-strategy>
+		</db:listener>
+		<logger level="INFO" doc:name="Logger" doc:id="dea91bfe-f10d-4717-b049-4a04b14e7985" message="#[payload]"/>
+		<set-variable value="#[true]" doc:name="flag" doc:id="8145d256-ee57-464e-8866-a4652e000f92" variableName="flag"/>
+		<choice doc:name="Choice" doc:id="067366dc-7448-4192-8f4c-597ba393450e" >
+						<when expression="#[sizeOf(payload) == 0]">
+				<set-variable value="#[false]" doc:name="flag to False" doc:id="7310661b-599f-4cfd-b163-fe94c87b5d22" variableName="flag"/>
+			
+</when>
+			<when expression="#[(payload.current_in_stock_quantity !=0 and payload.previous_in_stock_quantity==0)]">
+				<set-variable value='#["Item with ID " ++ (payload.item_id default 1 as String) ++ " is now back in stock!"]' doc:name="email_body" doc:id="d5a5b4ee-6d60-4064-b173-83c163350b34" variableName="email_body"/>
+			</when>
+			<when expression="#[(payload.current_in_stock_quantity ==0 and payload.previous_in_stock_quantity !=0)]">
+				<set-variable value='#["Item with ID " ++ (payload.item_id default 1 as String) ++ " is out of stock!"]' doc:name="email_body" doc:id="1d340d4e-402b-484d-8b43-cd20444a2f36" variableName="email_body"/>
+			</when>
+			<when expression="#[payload.item_current_price &lt; payload.item_previous_price]">
+				<set-variable value='#["Item with ID " ++ (payload.item_id default 1 as String) ++ " is now available at a discounted price"]' doc:name="email_body" doc:id="04f7c7c7-ec94-4ebf-9428-98be8fe8ba12" variableName="email_body"/>
+			</when>
+
+			<otherwise >
+				<set-variable value='#["Item with ID " ++ (payload.item_id default 1 as String) ++ " price has now increased!"]' doc:name="email_body" doc:id="d12c981f-7796-4fa0-9b06-7a789186a2de" variableName="email_body"/>
+			</otherwise>
+		</choice>
+		
+		
+		<choice doc:name="Choice" doc:id="9270b6c1-5e66-481a-b041-3b250f554769" >
+			<when expression="#[vars.flag]">
+				<set-variable value="#[payload.item_id]" doc:name="item_id" doc:id="64ef0732-08a8-40a1-9c4c-e7b8e7d82a62" variableName="item_id" />
+				<db:select doc:name="Select" doc:id="6f94af1b-84a5-4bb4-9216-320425c7396a" config-ref="Database_Config">
+			<db:sql><![CDATA[SELECT DISTINCT(wishlist_id) as wishlist_id FROM wishlist_details WHERE item_id=:id]]></db:sql>
+			<db:input-parameters><![CDATA[#[{"id": payload.item_id}]]]></db:input-parameters>
+		</db:select>
+				<choice doc:name="Choice" doc:id="51060044-4dd6-4c30-bd19-18b0d3a01290">
+					<when expression="#[sizeOf(payload) != 0]">
+						<logger level="INFO" doc:name="Logger" doc:id="de852cd1-7cd3-4d3a-b871-8c4c198665bf" message="#[payload]" />
+						<foreach doc:name="For Each" doc:id="eace7e8b-e03b-43e0-a347-224dce1b6e61" collection="#[payload]">
+			<db:select doc:name="Select" doc:id="dafb2ad6-fa41-4e39-8de0-c8c103ddc254" config-ref="Database_Config">
+				<db:sql><![CDATA[SELECT DISTINCT(user_id) as user_id FROM wishlist WHERE id=:id]]></db:sql>
+				<db:input-parameters><![CDATA[#[{"id": payload.wishlist_id}]]]></db:input-parameters>
+			</db:select>
+			<logger level="INFO" doc:name="Logger" doc:id="6213ac82-4e60-48b5-b07c-6e07781bef76" message="#[payload]"/>
+			<foreach doc:name="For Each" doc:id="04194435-a2d3-4897-9410-970ba3901599" collection="#[payload]">
+								<salesforce:query doc:name="Query" doc:id="cdf7946f-5eb6-4c17-88ea-3d1a368bcaa3" config-ref="Salesforce_Config_mule_ecomm">
+									<reconnect-forever />
+									<salesforce:salesforce-query ><![CDATA[SELECT Address__c, full_name__c from user_table__c where id__c = :id]]></salesforce:salesforce-query>
+									<salesforce:parameters ><![CDATA[#[output application/java
+---
+{
+	"id" : payload.user_id
+}]]]></salesforce:parameters>
+								</salesforce:query>
+								<ee:transform doc:name="Transform Message" doc:id="2650183d-4f5c-4fb2-a642-daa606189cee" >
+									<ee:message >
+										<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"Address__c": payload[0].Address__c as String,
+	"full_name__c": payload[0].full_name__c as String
+}]]></ee:set-payload>
+									</ee:message>
+								</ee:transform>
+								<email:send doc:name="Send" doc:id="156aa515-84d4-4f39-bea1-035979a9f436" config-ref="Email_SMTP" fromAddress='#["cu.16bc1798@gmail.com"]' subject="MuleEcom- Wishlist Alert!">
+					<email:to-addresses>
+										<email:to-address value="#[payload.Address__c]" />
+
+					</email:to-addresses>
+					<email:body contentType="text/plain" encoding="UTF-8">
+						<email:content><![CDATA[#[%dw 2.0
+output text/plain
+---
+"Hi " ++ payload.full_name__c default "" as String ++ ",\n\n" ++ vars.email_body]]]></email:content>
+					</email:body>
+				</email:send>
+								<logger level="INFO" doc:name="Logger" doc:id="6209d5b8-bcfc-4c3b-ae52-1ee2639d5fd9" message="#[payload]" />
+			</foreach>
+		</foreach>
+						<logger level="INFO" doc:name="Logger" doc:id="a2e9bc5d-7ee4-454f-9c3b-687502cad662" message="#[payload]" />
+						<ee:transform doc:name="Transform Message" doc:id="dbd61229-7376-4ac0-b702-e30a4cd9cf0c" >
+							<ee:message >
+								<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message":"email sent successfully"
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+					</when>
+					<otherwise >
+						<logger level="INFO" doc:name="Logger" doc:id="f7a4b876-bcc9-4249-8ce7-a5b864c9adbe" message="Item not present in any wishlist!"/>
+					
+</otherwise>
+				</choice>
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Logger" doc:id="7fc854a8-bc2e-4a70-b265-ac3410ede03d" message="No modification detected in the inventory!"/>
+				<set-payload value="No change detected!" doc:name="Set Payload" doc:id="591fdc34-554b-4d34-93ed-1eea4de5091a" />
+			
+</otherwise>
+		</choice>
+		<error-handler ref="globalError_Handler" />
+	
+</flow>
+	
+	</mule>

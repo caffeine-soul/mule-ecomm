@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
-	xmlns:db="http://www.mulesoft.org/schema/mule/db"
-	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
-	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd 
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
-http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
 	
 	<flow name="PostUsers" doc:id="8d4464fc-e0d8-46ca-9c38-8b83c238aa88" >
 		<ee:transform doc:name="Transform Message" doc:id="6026c304-dc6a-4995-b939-39ea293095b8" >
@@ -23,6 +24,12 @@ output application/java
 	id__c: payload.id
 }]]]></ee:set-payload>
 			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="user_id" ><![CDATA[%dw 2.0
+output application/java
+---
+payload.id as Number]]></ee:set-variable>
+			</ee:variables>
 		</ee:transform>
 		<salesforce:create doc:name="Create" doc:id="20a0c428-7023-4e56-a70d-e54254cbb574" config-ref="Salesforce_Config_mule_ecomm" type="user_table__c" target="user_create">
 			<reconnect />
@@ -61,6 +68,7 @@ output application/java
 201]]></ee:set-variable>
 			</ee:variables>
         </ee:transform>
+		<error-handler ref="globalError_Handler" />
         
 	</flow>
 	<flow name="DeleteUsers" doc:id="eb0f4c7a-a6bb-440e-9831-2f1b5459cddb" >
@@ -99,22 +107,10 @@ output application/json
 			</when>
 			<otherwise >
 				<logger level="INFO" doc:name="Logger" doc:id="78a61117-789e-4d97-bf43-bb1ab10b0b6e" message="default" />
-				<ee:transform doc:name="Transform Message" doc:id="74c6be39-aca0-4126-a300-dc16bdd78b2f" >
-					<ee:message >
-						<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-if (sizeOf(vars.query_var) != 0) {
-	"message": "Incorrect Password Provided; Please check your credentials!" 
-}
-else {
-	"message": "User doesn't exist!" 
-}
-]]></ee:set-payload>
-					</ee:message>
-				</ee:transform>
+				<raise-error doc:name="Raise error" doc:id="f96a23ea-f496-49b0-a011-66cb929156af" type="USERS:WRONG_CREDENTIALS"/>
 			</otherwise>
 		</choice>
+		<error-handler ref="globalError_Handler" />
 	
 </flow>
 	<flow name="UpdateUsers" doc:id="c923cd11-2cdd-43b9-847a-e1da1efab057" initialState="started">
@@ -160,22 +156,10 @@ output application/json
 			</when>
 			<otherwise >
 				<logger level="INFO" doc:name="Logger" doc:id="48b058f3-3de1-4103-9de8-5e0304bcdc0e" message="default" />
-				<ee:transform doc:name="Transform Message" doc:id="e087033c-bf4f-45e4-940f-ed506fe9943f" >
-					<ee:message >
-						<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-if (sizeOf(vars.query_var) != 0) {
-	"message": "Incorrect Password Provided; Please check your credentials!" 
-}
-else {
-	"message": "User doesn't exist!" 
-}
-]]></ee:set-payload>
-					</ee:message>
-				</ee:transform>
+<raise-error doc:name="Raise error" doc:id="966b505d-ba0d-4ab9-9b6a-5f48bd5ed66d" type="USERS:WRONG_CREDENTIALS"/>
 			</otherwise>
 		</choice>
+		<error-handler ref="globalError_Handler" />
 	</flow>
 	
 	

@@ -1,0 +1,11 @@
+%dw 2.0
+
+type auto_7b0b2ad7_dd25_4f66_b4f1_326669e96e77_Input_Payload = {|
+  item_id: Number, 
+  item_previous_price: Number, 
+  last_updated_at: String, 
+  current_in_stock_quantity: Number, 
+  previous_in_stock_quantit: Number, 
+  item_current_price: Number
+|}
+
