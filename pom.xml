@@ -44,6 +44,7 @@
 						<properties>
 							<anypoint.platform.client_id>${anypoint.platform.client_id}</anypoint.platform.client_id>
 							<anypoint.platform.client_secret>${anypoint.platform.client_secret}</anypoint.platform.client_secret>
+							<anypoint.platform.encryptionKey>${anypoint.platform.encryptionKey}</anypoint.platform.encryptionKey>
 						</properties>
 					</cloudHubDeployment>
 					<classifier>mule-application</classifier>
@@ -113,13 +114,6 @@
 			<artifactId>mule-email-connector</artifactId>
 			<version>1.5.2</version>
 			<classifier>mule-plugin</classifier>
-		</dependency>
-		<dependency>
-			<groupId>3cb354e5-9e67-42b4-8c36-6448f00baecc</groupId>
-			<artifactId>mule-ecommerce-project</artifactId>
-			<version>1.0.4</version>
-			<classifier>raml</classifier>
-			<type>zip</type>
 		</dependency>
 		<dependency>
 			<groupId>mysql</groupId>
@@ -206,6 +200,13 @@
 			<artifactId>mule-secure-configuration-property-module</artifactId>
 			<version>1.2.3</version>
 			<classifier>mule-plugin</classifier>
+		</dependency>
+		<dependency>
+			<groupId>3cb354e5-9e67-42b4-8c36-6448f00baecc</groupId>
+			<artifactId>mule-ecommerce-project</artifactId>
+			<version>1.0.5</version>
+			<classifier>raml</classifier>
+			<type>zip</type>
 		</dependency>
 	</dependencies>
 
