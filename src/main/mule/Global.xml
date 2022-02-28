@@ -28,7 +28,7 @@ http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/m
 			</email:properties>
 		</email:smtp-connection>
 	</email:smtp-config>
-	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="47e83eb1-54ed-4ec5-b529-c5441a46efd6" file="config.yaml" key="${anypoint.platform.encryptionKey}" >
+	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="47e83eb1-54ed-4ec5-b529-c5441a46efd6" file="config.yaml" key="mulesoft" >
 		<secure-properties:encrypt algorithm="Blowfish" />
 	</secure-properties:config>
 	<api-gateway:autodiscovery apiId="${secure::api.autodiscovery_id}" ignoreBasePath="true" doc:name="API Autodiscovery" doc:id="bc94a49e-ca7f-4494-a877-2165edc5e85b" flowRef="mule-ecommerce-project-main" />
