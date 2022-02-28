@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry kind="con" path="org.mule.tooling.API_SPEC_LIB/3cb354e5-9e67-42b4-8c36-6448f00baecc/mule-ecommerce-project/1.0.5"/>
 	<classpathentry kind="con" path="MULE_LIB/com.mulesoft.modules/mule-secure-configuration-property-module/1.2.3"/>
 	<classpathentry kind="con" path="MULE_LIB/com.mulesoft.connectors/mule-salesforce-connector/10.14.0"/>
 	<classpathentry kind="con" path="MULE_LIB/org.mule.connectors/mule-db-connector/1.12.1"/>
@@ -8,7 +9,6 @@
 	<classpathentry kind="con" path="org.mule.tooling.MULE_PROJECT_LIB"/>
 	<classpathentry kind="con" path="MULE_LIB/com.mulesoft.munit/munit-tools/2.3.7"/>
 	<classpathentry kind="con" path="MULE_LIB/com.mulesoft.munit/munit-runner/2.3.7"/>
-	<classpathentry kind="con" path="org.mule.tooling.API_SPEC_LIB/3cb354e5-9e67-42b4-8c36-6448f00baecc/mule-ecommerce-project/1.0.4"/>
 	<classpathentry kind="con" path="MULE_LIB/org.mule.connectors/mule-email-connector/1.5.2"/>
 	<classpathentry kind="con" path="MULE_LIB/org.mule.connectors/mule-objectstore-connector/1.2.1"/>
 	<classpathentry kind="con" path="MULE_LIB/org.mule.connectors/mule-sockets-connector/1.2.2"/>
